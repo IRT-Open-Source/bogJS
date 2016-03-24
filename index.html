@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>bogJS - Object-based audio</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/logo-nav.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <link rel="stylesheet" href="css/jquery-ui.min.css">
+    <link href="css/ui.css" type="text/css" rel="stylesheet">
+ 
+    <!--
+    <script src="js/jquery-1.10.2.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    -->
+    <script src="dist/bogJS-dev.js"></script>
+    <script src="dist/bogJS-ui-latest.js"></script>
+
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">
+                    <img src="css/images/irt_48x48.png" alt="">
+                </a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="#oba">Object-based audio</a>
+                    </li>
+                    <li>
+                        <a href="#howto">How to use</a>
+                    </li>
+                    <li>
+                        <a href="#demo">Demo</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+    
+    <a id="oba" class="anchor_section"></a> 
+    <!-- Page Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Object-based audio</h1>
+                <p>
+                Object-based audio is a revolutionary approach for creating and 
+                deploying interactive, personalised, scalable and immersive 
+                content, by representing it as a set of individual assets 
+                together with metadata describing their relationships and 
+                associations. 
+                This allows media objects to be assembled in ground-breaking ways to 
+                create new user experiences. With the introduction of HTML5 
+                and the Web Audio API, an important prerequisite was made for 
+                native rendering of object-based audio in modern browsers.
+                <!-- TODO: inster links to general information about oba-->
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+    
+    <a id="howto" class="anchor_section"></a>    
+    <!-- Page Content -->
+    <div class="container irt_section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>How to use this demo</h1>
+            </div>
+            <div class="col-md-6">
+                <h3>Technical requirements</h3>
+                <p>
+                To play this demo, you need a modern browser which supports
+                HTML5 and the Web Audio API. This is the case for all major
+                browsers (Firefox, Chrome, Safari and Opera). Only Internet
+                Explorer supports the Web Audio API only in Edge with Windows
+                10. You can check the support by visiting 
+                <a href="http://caniuse.com/#feat=audio-api">this page</a>.
+                </p>
+                <h3>Starting the demo</h3>
+                <p>
+                To start the demo, choose a scene from the list and press the play 
+                button left of it once the audio files are loaded. Depending 
+                on the capabilities of your browser, either m4a, ogg or mp3 
+                files will be downloaded. If your internet connection is rather slow 
+                and / or the audio files are rather large, it might take a while 
+                until you can start the demo.
+                </p>
+                <h3>Choosing the rendering mode</h3>
+                <p>
+                You can <b>choose between simply Stereo rendering (default) and
+                    fancy headphone</b> rendering by clicking the icon in the lower right
+                corner.
+                <br>
+                Note: If you are using the Internet Explorer "Edge", only
+                Stereo rendering is supported currently. 
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h3>Moving the listener</h3>
+                <p>
+                You can <b>rotate the listener's orientation</b> by positioning the
+                mouse above the listener's icon and rotate the mousewheel up
+                or down. 
+                <br>
+                One can also <b>change the position of the listener</b> within the
+                scene by moving it while pressing the mouse button. 
+                </p>
+                <h3>Object interaction</h3>
+                <p>
+                By clicking the controls icon left of the rendering mode icon,
+                you can acticate the interactve mode. Any scene commands will
+                be ignored and you can <b>change the position of objects</b>.
+                <br>
+                Furthermore, you can <b>mute / unmute objects by double clicking
+                    them</b>.
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+    
+    <a id="demo" class="anchor_section"></a>
+    <!-- Page Content -->
+    <div class="container irt_section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Demo</h1>
+                <p>
+                </p>
+                <div class="col-md-3"> 
+                    <button class="btn btn-primary irt_btn_basic" type="button" id="btn_start"></button>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Choose scene
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a value="debo.spatdif">Debo - Ele</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-9">
+                    <div class="OM_area">
+                        <div class="irt_msg panel panel-default" id="status_msg" style="display:block">
+                            <p>No scene selected</p>
+                            <div class="progress">
+                                <div id="loaded_progress" class="progress-bar progress-bar-striped active"
+                                                          role="progressbar" aria-valuenow="100" 
+                                                          aria-valuemin="0" aria-valuemax="100"
+                                                          style="width: 100%; display: none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="irt_listener" style="display: none"></div>
+                        <div class="irt_switchPanningMode">
+                            <img src="img/stereo.png" style="width: 36px; height: 32px"/>
+                            <img src="img/headphones.png" style="width: 36px; height: 32px; display: none"/>
+                        </div>
+                        <div class="irt_toggleInteractiveMode">
+                            <img id="irt_interactive_off" src="img/control_disabled.png" style="width: 36px; height: 32px"/>
+                            <img id="irt_interactive_on" src="img/control.png" style="width: 36px; height: 32px; display: none"/>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    var ui;
+                    var om;
+                    $(".dropdown-menu li a").click(function(){
+                        $("#btn_start").unbind();
+                        $(".irt_listener").hide();
+                        try {
+                            ui.stop();
+                        } catch(err){
+                            console.log("UI object not yet running.");
+                        }
+                        $("#irt_interactive_on").hide();
+                        $("#irt_interactive_off").show();
+                        var file = $(this).attr("value");
+                        init(file);
+                        $(".dropdown .btn:first-child").text($(this).text());
+                        $(".dropdown .btn:first-child").val($(this).text());
+                    });
+
+                    function init(sceneFile){
+                        $("#btn_start").removeClass("btn_stop");
+                        $("#status_msg").show();
+                        $("#loaded_progress").show();
+                        $("#status_msg>p").text("Loading audio files...");
+                        $(document).on("om_ready", function(){
+                            $("#status_msg").hide();
+                            $("#btn_start").addClass("btn_start");
+                        });
+                        $(document).on("om_ended", function(){
+                            ui.stop();
+                            $("#btn_start").removeClass("btn_stop").addClass("btn_start");
+                            $(".irt_listener").hide();
+                        });
+
+                        om = new ObjectManager("scenes/"+sceneFile);
+                        ui = new UIManager(om, 'foo', 0);
+                        ui.bg = ".OM_area";
+                        ui.listener = ".irt_listener";
+                        ui.btn_togglePanning = ".irt_switchPanningMode";
+                        ui.btn_toggleInteractive = ".irt_toggleInteractiveMode";
+
+                        $("#btn_start").click(function(){
+                            if (om.playing == true){
+                                if (ui.stop()){
+                                    console.log("Stopping scene");
+                                    $(".irt_listener").hide();
+                                    $("#btn_start").toggleClass("btn_stop btn_start");
+                                }
+                            } 
+                            else if (om.playing == false) {
+                                if (ui.start()){
+                                    console.log("Starting scene");
+                                    $(".irt_listener").show();
+                                    $("#btn_start").toggleClass("btn_start btn_stop");
+                                }
+                            }
+                        });
+                    } 
+                </script>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->   
+
+    <br>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+</body>

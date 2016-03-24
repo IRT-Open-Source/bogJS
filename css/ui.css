@@ -1,0 +1,127 @@
+.OM_area {
+    background: #fbf8e9;
+    border-color: #f9f3d9;
+    color: #4d4e53;
+    border-width: 5px;
+    border-style: solid;
+    padding: 10px;
+    margin: 20px auto;
+    width: 500px;
+    height: 500px;
+    position: relative;
+}
+
+.irt_listener{
+    background-image: url("../img/listener.png");
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    /*
+    margin-left: auto;
+    margin-top: 50%;
+    */
+}
+
+
+.irt_object{
+    background-image: url("../img/ls.png");
+    width: 32px;
+    height: 32px;
+    position: absolute;
+}
+
+.irt_object_disabled{
+    background-image: url("../img/ls_disabled.png");
+    width: 32px;
+    height: 32px;
+    position: absolute;
+}
+
+.irt_object:hover{
+    cursor: move;
+ }
+
+.irt_object_title {
+    margin-top: 32px;
+    /*color: #2D4E0D;*/
+    font-family: sans-serif;
+    font-size: smaller;
+}
+
+.irt_switchPanningMode{
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+
+.irt_switchPanningMode:hover{
+    cursor: pointer;
+}
+
+.irt_toggleInteractiveMode{
+    width: 36px;
+    height: 32px;
+    position: absolute;
+    bottom: 5px;
+    right: 37px;
+}
+
+.irt_toggleInteractiveMode:hover{
+    cursor: pointer;
+}
+
+.irt_msg{
+    position: relative;
+    padding: 20px;
+    width: 350px;
+    margin: 0px auto;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: large;
+}
+
+.irt_section {
+    /*
+    padding-top: 40px;
+    margin-top: -40px;
+    */
+}
+
+.anchor_section {
+    display: block;
+    position: relative;
+    top: -70px;
+    visibility: hidden;
+}
+
+.irt_btn_basic {
+    position: relative;
+    z-index: 10;
+    float: left;
+    width: 60px;
+    height: 34px;
+    margin-right: 10px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url("../img/play_disabled.png");
+}
+
+.btn_start {
+    background-image: url("../img/play.png");
+}
+
+.btn_pause {
+    background-image: url("../img/pause.png");
+}
+
+.btn_stop {
+    background-image: url("../img/stop.png");
+}
+
+.btn_stop_disabled {
+    background-image: url("../img/stop_disabled.png");
+}
+
+

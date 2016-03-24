@@ -1,0 +1,40 @@
+{
+  "name": "bogJS",
+  "version": "0.2.11",
+  "description": "A JS framework for object-based rendering in browsers",
+  "main": "index.js",
+  "scripts": {
+    "build-debug": "simplifyify index.js -o dist/bogJS-latest.js --debug --bundle",
+    "build-debug-ui": "simplifyify index-ui.js -o dist/bogJS-ui-latest.js --debug --bundle",
+    "build-min": "simplifyify index.js -o dist/bogJS-latest.min.js --minify --debug",
+    "build-min-ui": "simplifyify index-ui.js -o dist/bogJS-ui-latest.min.js --minify --debug",
+    "build": "npm run build-debug && npm run build-min && npm run build-debug-ui && npm run build-min-ui",
+    "build-release": "npm version patch && simplifyify index.js -o dist/bogJS-`git describe --abbrev=0`.js --minify --debug --bundle && simplifyify index-ui.js -o dist/bogJS-ui-`git describe --abbrev=0`.js --minify --debug --bundle && npm run build",
+    "watch": "simplifyify index.js -o dist/bogJS-dev.js --watch --bundle --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.irt.de:pa/bogJS.git"
+  },
+  "browserify": {
+    "transform": [
+      "commitify"
+    ]
+  },
+  "author": "Michael Weitnauer",
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "^2.2.0",
+    "jquery-mousewheel": "^3.1.13",
+    "jquery-ui": "^1.10.5",
+    "jquery.transit": "^0.9.12",
+    "loglevel": "^1.4.0",
+    "underscore": "^1.8.3",
+    "waaclock": "^0.5.3"
+  },
+  "devDependencies": {
+    "commitify": "git://github.com/kickermeister/commitify.git#master",
+    "jsdoc": "^3.4.0",
+    "simplifyify": "^2.0.1"
+  }
+}
