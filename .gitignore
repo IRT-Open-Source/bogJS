@@ -6,11 +6,9 @@ _site
 bogJS_demo.zip
 bogJS_demo
 ~$Multichannel-Order_Browsertest.xlsx
-dist/bogJS-dev*
+dist/
 !dist/bogJS-latest*
 !dist/bogJS-ui-latest*
-!dist/bogJS-v*
-!dist/bogJS-ui-v*
 doc
 demos/
 js/
