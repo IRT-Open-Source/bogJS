@@ -71,6 +71,11 @@ om = new ObjectManager('path/to/sceneFile.spatdif');
 ```
 
 ## Installation
+#### Using the latest version
+For your convenience, the dist/ folder contains the latest build files of
+bogJS. 
+
+#### Building by yourself
 You only need [npm](https://www.npmjs.com/) to build this framework. 
 Once you have npm installed, you must run 
 
