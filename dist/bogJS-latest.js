@@ -1,12 +1,12 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "946ff27 v0.2.11";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Mar 21 2016 13:29:20 GMT+0100 (CET)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "b59f2fe v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Thu Mar 24 2016 16:51:21 GMT+0100 (CET)";
 
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "946ff27 v0.2.11";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Mar 21 2016 13:29:20 GMT+0100 (CET)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "b59f2fe v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Thu Mar 24 2016 16:51:21 GMT+0100 (CET)";
 
 
 // making the objects globally available
@@ -13603,12 +13603,12 @@ var SceneReader = require('./scene_reader');
  * {@link module:bogJS~keyframes|keyframes}, {@link module:bogJS~audioURLs|audioURLs}
  * and {@link module:bogJS~sceneInfo|sceneInfo}. See {@link
  * module:bogJS~SceneReader#load|SceneReader.load()}
- * @param {Object} mediaElement - A HMTL5 media element instance to be used as
+ * @param {Object} [mediaElement] - A HMTL5 media element instance to be used as
  * audio bed. If passed, any potentially other given audio bed from the scene
  * file will be ignored.
- * @param {Number} audiobed_tracks - If mediaElement is passed, the expected 
+ * @param {Number} [audiobed_tracks] - If mediaElement is passed, the expected 
  * channel number must be passed as well.
- * @param {String} channelorder_root - Path to encoded channel order detection
+ * @param {String} [channelorder_root] - Path to encoded channel order detection
  * test files. See also [ChannelOrderTest]{@link module:bogJS~ChannelOrderTest} 
  * and the README.md file.
  * @fires module:bogJS~ObjectManager#om_newGain
