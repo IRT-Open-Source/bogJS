@@ -435,8 +435,35 @@ ObjectManager.prototype = {
             var evt = this._evts[key];
             var evt_time = parseFloat(key);
             var newTime = evt_time - time + this.ctx.currentTime;
-            log.debug("Evt " + key + " rescheduled from " + evt.deadline + " to " + newTime);
+            //log.debug("Evt " + key + " rescheduled from " + evt.deadline + " to " + newTime);
             evt.schedule(newTime);
+        }
+
+        // set single and grouped audio signals to the passed position and
+        // check if passed time > duration of the single and grouped audio
+        // signals:
+        var now = this.ctx.currentTime - this._startTime;
+        for (var kf in this._singleObjAudios){
+            var audioStartPos = parseFloat(kf);
+            for (var idx in this._singleObjAudios[kf]){
+                var duration = this._singleObjAudios[kf][idx].duration;
+                var audioNewPos = time - audioStartPos;
+                // should stop audio if audioNewPos > duration
+                // negative time values will be ignored.
+                this._singleObjAudios[kf][idx].setTime(audioNewPos);  
+                log.debug("Set audio " + idx + " to position " + audioNewPos);
+            }
+        }
+        for (var kf in this._groupObjPlayers){
+            var audioStartPos = parseFloat(kf);
+            for (var group in this._groupObjPlayers[kf]){
+                var duration = this._groupObjPlayers[kf][group].duration;
+                var audioNewPos = time - audioStartPos;
+                this._groupObjPlayers[kf][group].Time(audioNewPos);  // should stop audio if audioNewPos > duration
+            }
+        }         
+        if (this._audiobed !== false){
+            this._audiobed.setTime(time);
         }
     },
     
