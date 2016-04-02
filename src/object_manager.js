@@ -448,10 +448,14 @@ ObjectManager.prototype = {
             for (var idx in this._singleObjAudios[kf]){
                 var duration = this._singleObjAudios[kf][idx].duration;
                 var audioNewPos = time - audioStartPos;
-                // should stop audio if audioNewPos > duration
-                // negative time values will be ignored.
-                this._singleObjAudios[kf][idx].setTime(audioNewPos);  
-                log.debug("Set audio " + idx + " to position " + audioNewPos);
+                // negative time values shall stop the signal.
+                if (audioNewPos <= 0){
+                    this._singleObjAudios[kf][idx].stop();  
+                } else {
+                    // should stop audio if audioNewPos > duration
+                    this._singleObjAudios[kf][idx].setTime(audioNewPos);  
+                    log.debug("Set audio " + idx + " to position " + audioNewPos);
+                }
             }
         }
         for (var kf in this._groupObjPlayers){
@@ -459,7 +463,14 @@ ObjectManager.prototype = {
             for (var group in this._groupObjPlayers[kf]){
                 var duration = this._groupObjPlayers[kf][group].duration;
                 var audioNewPos = time - audioStartPos;
-                this._groupObjPlayers[kf][group].Time(audioNewPos);  // should stop audio if audioNewPos > duration
+                // negative time values shall stop the signal.
+                if (audioNewPos <= 0){
+                    this._groupObjPlayers[kf][group].stop();  
+                } else {
+                    // should stop audio if audioNewPos > duration
+                    this._groupObjPlayers[kf][group].setTime(audioNewPos);  
+                    log.debug("Set group " + group + " to position " + audioNewPos);
+                }
             }
         }         
         if (this._audiobed !== false){
