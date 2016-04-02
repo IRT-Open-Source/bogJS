@@ -415,8 +415,13 @@ ObjectManager.prototype = {
         this.playing = false;
     },
     
-    // This method will not work along with the current single object usage.
-    // TODO: improve me!
+    /**
+     * Will change the playback position of all single, group and audiobed
+     * signals. Further, the closes keyframe ahead of the passed time will be
+     * activated.
+     *
+     * @param {float} time - Desired playback position
+     */
     setTime: function(time){
         // activate closest keyframe before time to avoid
         // missing / "forgetting" object commands..
