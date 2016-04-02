@@ -227,6 +227,23 @@ HTML file using bogJS is located. Otherwise you will likely run into a CORS
 issue.
 For OS X user, there is a encoding bash script enclosed under /tools.
 
+```javascript
+/* Simple example */ 
+var ch = new ChannelOrderTest("mp4", 6); 
+ch.testChs(); 
+// -> [0, 2, 1, 4, 5, 3] 
+
+/* Advanced example */ 
+var ctx = new AudioContext(); 
+var ch; 
+$(ch).on('order_ready', function(e, order){ 
+    console.log("Got channel order: " + order); 
+    doSomething(); 
+}); 
+ch = new ChannelOrderTest("ogg", 4, ctx, "path/to/testfiles/"); 
+// -> Got channel order: [0, 3, 2, 1]
+```
+
 #### Container and file extensions
 If no file extension is given in the scene file, the AudioData() class and 
 the ObjectManager() class will firstly detect the capabilities of the used
