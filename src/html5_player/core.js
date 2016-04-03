@@ -467,6 +467,7 @@ AudioData.prototype = {
                 that._buffer = buffer;
                 that.canplay = true;
                 that._rangeEnd = that._buffer.duration;
+                that.duration = that._buffer.duration;
                 log.debug("audio loaded & decoded!");
 
                 /**
@@ -618,6 +619,7 @@ IRTPlayer.prototype = {
                  */
                 $(this).triggerHandler("player_ready");
                 this.canplay = true;
+                this.duration = this.signals[0].duration;
             }
         }.bind(this));
 
