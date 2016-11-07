@@ -1,6 +1,6 @@
 /**
  * @file media_controller.js
- * @author Michael Weitnauer: {@link weitnauer@irt.de} 
+ * @author Michael Weitnauer: {@link weitnauer@irt.de}
  */
 
 /**
@@ -23,10 +23,17 @@ var log = require('loglevel');
 var GainController = function(ctx, targetNode){
     this._gain = 1;
     this.gainNode = ctx.createGain();
+
+    // Experimental highpass to avoid sizzling noinse while chaning view / angle
+    this.highpass = ctx.createBiquadFilter();
+    this.highpass.type = "highpass";
+    this.highpass.connect(this.gainNode);
+    this.setHighpassFreq(80);
+
     var targetNode = targetNode || ctx.destination;
     // FIXME: if applied here, the gainNode stays
     // connected with ctx.destination:
-    // this.reconnect(targetNode);  
+    // this.reconnect(targetNode);
 }
 
 GainController.prototype = {
@@ -44,7 +51,7 @@ GainController.prototype = {
      *
      */
     unmute: function(){
-        this.setGain(1);   
+        this.setGain(1);
     },
 
     /**
@@ -93,7 +100,7 @@ GainController.prototype = {
             }
         }
     },
-    
+
     /**
     * This method will disconnect output of the {@link GainController} instance from
     * a given node or all connected nodes if node is not given/undefined.
@@ -101,6 +108,10 @@ GainController.prototype = {
     disconnect: function(node){
         //log.debug("Disconnecting ", this, " from ", node);
         this.gainNode.disconnect(node);
+    },
+
+    setHighpassFreq: function(freq){
+        this.highpass.frequency.value = freq;
     }
 }
 
@@ -124,16 +135,16 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
     /** @protected
      * @var {boolean} */
     this.canplay = false;
-    
+
     /** @var {Object.<AudioContext>} */
     this.ctx = ctx;
-    
+
     this._mediaElement = mediaElement;
     this._mediaSourceNode = this.ctx.createMediaElementSource(this._mediaElement);
     this._tracks = tracks;
     this._splitter = this.ctx.createChannelSplitter(this._tracks);
     this._mediaSourceNode.connect(this._splitter);
-    
+
     this.gainController = [];
     if (typeof targetNodeList === 'undefined') {
         var targetNodeList = [];
@@ -145,36 +156,36 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
         this.gainController[i] = new GainController(this.ctx, targetNodeList[i]);
 
         // TODO: Workaround for wrong channel order of decoded bitstream
-        this._splitter.connect(this.gainController[i].gainNode, i);
+        this._splitter.connect(this.gainController[i].highpass, i);
     }
-    
+
     this._mediaElement.onended = function(){
         log.debug("Audio buffer has ended!");
         this._playing = false;
-        
+
         /**
          * Will be fired once the playback has ended
          * @event module:bogJS~MediaElementController#audio_ended
          */
         $(this).triggerHandler("audio_ended");
     }.bind(this);
-    
+
     this._mediaElement.onstalled = function(){
         log.info("Pausing playback - need to buffer more");
         this.ctx.suspend();
     }.bind(this);
-    
+
     this._mediaElement.onplaying = function(){
         log.info("Resuming playback of media element");
         if (this.ctx.state === "suspended"){
             this.ctx.resume();
         }
     }.bind(this);
-    
+
     this._mediaElement.oncanplaythrough = function(){
         this.canplay = true;
         log.info("Playback of media element can start");
-        
+
         /**
          * Will be fired if media element playback can start
          * @event module:bogJS~MediaElementController#audio_loaded
@@ -183,7 +194,7 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
         if (this.ctx.state === "suspended"){
             this.ctx.resume();
         }
-    }.bind(this); 
+    }.bind(this);
 
     this._mediaElement.load();
     this._playing = false;
@@ -214,9 +225,9 @@ MediaElementController.prototype = {
      */
     pause: function(){
         this._mediaElement.pause();
-        this._playing = false; 
+        this._playing = false;
     },
-    
+
     /**
      * Stops playback.
      */
@@ -234,7 +245,7 @@ MediaElementController.prototype = {
     setVolume: function(vol){
         this._mediaElement.volume = vol;
     },
-    
+
     /**
      * Returns current gain value of {@link MediaElementController} instance
      *
@@ -263,23 +274,23 @@ MediaElementController.prototype = {
         this._looping = bool;
         this._mediaElement.loop = this._looping;
     },
-    
+
     /**
      * Mutes {@link MediaElementController} instance
      */
     mute: function(){
         this._mediaElement.muted = true;
     },
-    
+
     /**
      * Unmutes {@link MediaElementController} instance
      */
     unmute: function(){
         this._mediaElement.muted = false;
-    }, 
-    
+    },
+
     /**
-     * Jump to passed position during playback 
+     * Jump to passed position during playback
      *
      * @param {float} pos  - Must be >= 0
      */

@@ -18,8 +18,8 @@ var log = require('loglevel');
  * @param {Object} ctx - An AudioContext instance.
  * @param {AudioData} sourceNode - Instance of an {@link
  * module:irtPlayer~AudioData|AudioData} object.
- * @param {AudioData} [targetNode=ctx.destination] - Instance of an 
- * Web Audio API node to which the output of the ObjectController 
+ * @param {AudioData} [targetNode=ctx.destination] - Instance of an
+ * Web Audio API node to which the output of the ObjectController
  * shall be connected to.
  */
 
@@ -28,8 +28,14 @@ var ObjectController = function(ctx, sourceNode, targetNode) {
      * Instance of Web Audio Panner node
      * @var {Object.<AudioContext.PannerNode>}
      */
-    this.panner = ctx.createPanner();  
-    
+    this.panner = ctx.createPanner();
+
+    // Experimental highpass to avoid sizzling noinse while chaning view / angle
+    this.highpass = ctx.createBiquadFilter();
+    this.highpass.type = "highpass";
+    this.setHighpassFreq(80);
+    this.highpass.connect(this.panner);
+
     /**
      * Has the current panning mode of the object
      * @readonly
@@ -40,35 +46,35 @@ var ObjectController = function(ctx, sourceNode, targetNode) {
     this.setPanningType(this.panningType);
     this.position = [0, 0, 0];  // FIXME: make private and use set and get methods
     this.gain = 1;  // valid values between 0 and 1  // FIXME: make private and use set and get methods
-    
+
     this._state = false;
-    
+
     this.setAudio(sourceNode);
-    
+
     var targetNode = targetNode || ctx.destination;
     this.panner.connect(targetNode);
-}
+};
 
 ObjectController.prototype = {
-    
+
     /**
      * Change position of panner object within 3D space
      *
      * @param {Float[]} xyz - An array with three entries: [x, y, z]
-         
+
      * @see Interpolation as per AudioParam Interface not possible with
      * current WAA version. The PannerNode will be deprecated in V1
      * and a new SpatializerNode will be introduced that should
-     * support interpolation _and_ loading own HRTF databases!! 
+     * support interpolation _and_ loading own HRTF databases!!
      * {@link https://github.com/WebAudio/web-audio-api/issues/372| GitHub issue 372}
      */
     setPosition: function(xyz){
-        var xyz = [parseFloat(xyz[0]), parseFloat(xyz[1]), parseFloat(xyz[2])];
+        var my_xyz = [parseFloat(xyz[0]), parseFloat(xyz[1]), parseFloat(xyz[2])];
         this.panner.setPosition(xyz[0], xyz[1], xyz[2]);
-        log.debug("New Position: " + xyz);
+        log.debug("New Position: " + my_xyz);
         this.position = xyz;
     },
-     
+
     /**
      * Get current Position of object
      * @return {Float[]} position - Array with current [x, y, z] values
@@ -76,7 +82,7 @@ ObjectController.prototype = {
     getPosition: function(){
         return this.position;
     },
-    
+
     /**
      * Enabling / disabling the object
      *
@@ -109,7 +115,7 @@ ObjectController.prototype = {
      * @param {Float} gain - Must be between 0.0 and 1.0
      * @param {Float} [time=Now] - At which time shall the gain value be applied
      * @param {Boolean} [interpolation=false] - Set to true if gain
-     * value shall be linear faded to passed gain value from passed time on. If 
+     * value shall be linear faded to passed gain value from passed time on. If
      * false, the gain value will be applied immediately.
      */
     setGain: function(gain, time, interpolation){
@@ -132,9 +138,9 @@ ObjectController.prototype = {
             log.error("Gain values must be between 0 and 1");
         }
     },
-    
+
     /**
-     * Get current gain value of {@link 
+     * Get current gain value of {@link
      * module:irtPlayer~AudioData#gainNode|AudioData.gainNode}
      *
      * @return {Float} gain
@@ -144,7 +150,7 @@ ObjectController.prototype = {
     },
 
     /**
-     * Set panning type of Panner object instance. 
+     * Set panning type of Panner object instance.
      * Currently, "equalpower" only supports Stereo (2ch) panning.
      *
      * @param {("HRTF"|"equalpower")} panningType - Choose "HRTF" for binaural
@@ -162,14 +168,14 @@ ObjectController.prototype = {
 
     /**
      * Get panning type
-     * @return {("HRTF"|"equalpower")} panningType - Either "HRTF" or "equalpower" 
+     * @return {("HRTF"|"equalpower")} panningType - Either "HRTF" or "equalpower"
      */
     getPanningType: function(){
         return this.panner.panningModel;
     },
 
     /**
-     * Sets the double value describing how quickly the volume is reduced 
+     * Sets the double value describing how quickly the volume is reduced
      * as the source moves away from the listener. The initial default value
      * is 1. This value is used by all distance models.
      *
@@ -180,7 +186,7 @@ ObjectController.prototype = {
     },
 
     /**
-     * Sets the value determining which algorithm to use to reduce the 
+     * Sets the value determining which algorithm to use to reduce the
      * volume of the audio source as it moves away from the listener. The
      * initial default value is "inverse" which should be equivalent to 1/r.
      *
@@ -191,7 +197,7 @@ ObjectController.prototype = {
     },
 
     /**
-     * Sets the value representing the reference distance for reducing volume 
+     * Sets the value representing the reference distance for reducing volume
      * as the audio source moves further from the listener. The initial
      * default value is 1. This value is used by all distance models.
      *
@@ -202,9 +208,9 @@ ObjectController.prototype = {
     },
 
     /**
-     * Sets the value representing the maximum distance between the audio 
-     * source and the listener, after which the volume is not reduced any 
-     * further. The initial default value is 10000. This value is used 
+     * Sets the value representing the maximum distance between the audio
+     * source and the listener, after which the volume is not reduced any
+     * further. The initial default value is 10000. This value is used
      * only by the linear distance model.
      *
      * @param {float} maxDistance
@@ -215,7 +221,7 @@ ObjectController.prototype = {
 
     /**
      * Connects the input of the ObjectController instance
-     * with the output of the passed audioNode. 
+     * with the output of the passed audioNode.
      *
      * @param {AudioData} audioNode - Instance of an {@link
      * module:irtPlayer~AudioData|AudioData} or GainController object.
@@ -235,12 +241,16 @@ ObjectController.prototype = {
             // FIXME: AudioData() class should also have a connect method.
             // Better would be to use derived class mechanisms.
             if(this.audio.connect) {
-                this.audio.connect(this.panner);
+                this.audio.connect(this.highpass);
             }
             else {
-                this.audio.reconnect(this.panner);
+                this.audio.reconnect(this.highpass);
             }
         }
+    },
+
+    setHighpassFreq: function(freq){
+        this.highpass.frequency.value = freq;
     }
 }
 

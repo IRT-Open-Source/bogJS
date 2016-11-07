@@ -10,11 +10,11 @@
 /**
  * @typedef keyframes
  * @type {object}
- * @example 
+ * @example
  * keyframes = {0.0: [{obj: "Cello", cmd: "position", params: [3.2, 4, 0]},
- *                    {obj: "Cembalo", cmd: "gain", params: 0.5}], 
+ *                    {obj: "Cembalo", cmd: "gain", params: 0.5}],
  *              0.4: [{obj: "Cembalo", cmd: "is_present", params: 0},
- *                    {obj: "Cello", cmd: "gain", params: 1.0}], 
+ *                    {obj: "Cello", cmd: "gain", params: 1.0}],
  *              235: [{obj: "Viola", cmd: "is_present", params: 1},
  *                    {obj: "Viola", cmd: "position", params: [0.5, 3.2, 0.5]}]};
  */
@@ -22,7 +22,7 @@
 /**
  * @typedef audioURLs
  * @type {object}
- * @example 
+ * @example
  * audioURLs = {Cello: "http://sounds.myserver.com/Cello.ogg",
  *              Cembalo: "http://sounds.myserver.com/Cembalo.wav",
  *              Viola: "../../Viola.m4a"}
@@ -31,10 +31,10 @@
 /**
  * @typedef sceneInfo
  * @type {object}
- * @example 
+ * @example
  * sceneInfo = {name: "My fancy scene",
  *              listener_position: [0, 0, 0],
- *              listener_orientation: [0, 1, 0], 
+ *              listener_orientation: [0, 1, 0],
  *              object_count: 3,
  *              room_dimensions: [10, 10, 3]}
  */
@@ -42,7 +42,7 @@
 /**
  * @typedef singleObjects
  * @type {object}
- * @example 
+ * @example
  * singleObjects = {"70.754":["Birds1_L","Birds1_R"],
  *                  "72.0":["Birds2_L","Birds2_R"],
  *                  "79.29":["Birds3"],
@@ -54,7 +54,7 @@
 /**
  * @typedef groupObjects
  * @type {object}
- * @example 
+ * @example
  * groupObjects = {"78.2":["Birds1_L","Birds1_R"],
  *                  "90.65":["Birds"],
  *                  "117.55":["Stones_L","Stones_R"]}
@@ -63,7 +63,7 @@
 /**
  * @typedef audiobeds
  * @type {object}
- * @example 
+ * @example
  * audiobeds =  {Bed0: "bed_0", Bed1: "bed_1", Bed2: "bed_2", Bed3: "bed_3", Bed4: "bed_4"}
  */
 
@@ -94,10 +94,10 @@ var SceneReader = require('./scene_reader');
  * @param {Object} [mediaElement] - A HMTL5 media element instance to be used as
  * audio bed. If passed, any potentially other given audio bed from the scene
  * file will be ignored.
- * @param {Number} [audiobed_tracks] - If mediaElement is passed, the expected 
+ * @param {Number} [audiobed_tracks] - If mediaElement is passed, the expected
  * channel number must be passed as well.
  * @param {String} [channelorder_root] - Path to encoded channel order detection
- * test files. See also [ChannelOrderTest]{@link module:bogJS~ChannelOrderTest} 
+ * test files. See also [ChannelOrderTest]{@link module:bogJS~ChannelOrderTest}
  * and the README.md file.
  * @fires module:bogJS~ObjectManager#om_newGain
  * @fires module:bogJS~ObjectManager#om_newPosition
@@ -120,13 +120,13 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
      * @var {Object.<AudioContext>}
      */
     this.ctx = ctx;
-    
+
     /**
      * Instance of {@link SceneReader}
      * @var {(CustomReaderInstance|Object.<module:bogJS~SceneReader>)}
      */
     this.reader = reader || new SceneReader();
-    
+
     this._mediaElement = mediaElement;
     this._mediaElementTracks = audiobed_tracks;
     this._channorder_root = channelorder_root;
@@ -149,7 +149,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this._groupObjPlayers = {};
     this._singleObjAudios = {};
     this._kf_canplay = {};
-   
+
     /**
      * Array of all {@link module:bogJS~ObjectController|ObjectController} instances that are controlled
      * by the {@link module:bogJS~ObjectManager|ObjectManager}
@@ -158,7 +158,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this.objects = {};
     this._audioInstances = {};
     this._panningType = "equalpower";
-    
+
     /**
      * If set to true, the ObjectManager will ignore keyframe updates!
      * @var {boolean}
@@ -166,10 +166,10 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
      */
     this.interactive = false;
     this.playing = false;
-    
+
     this._listenerOrientation = [0, 0, -1];
     this.setListenerOrientation(0, 0, -1);
-    
+
     $(this.reader).on('scene_loaded', function(e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds){
         log.debug('Scene data loaded!');
 
@@ -179,14 +179,14 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
          * @var {module:bogJS~keyframes}
          */
         this._keyframes = keyframes;
-        
+
         /**
          * 'Dictionary' containing mapping for objects and URLs.
          * @abstract
          * @var {module:bogJS~audioURLs}
          */
         this._audioURLs = audioURLs;
-         
+
         /**
          * 'Dictionary' containing additional scene info
          * @abstract
@@ -196,21 +196,21 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
         this.object_count = sceneInfo.object_count || 0;
         this.roomDimensions = sceneInfo.room_dimensions || [10, 10, 3];
         this._listenerPosition = sceneInfo.listener_position || [0, 0, 0];
-        
+
         /**
          * 'Dictionary' containing mapping for objects and audiobed tracks
          * @abstract
          * @var {module:bogJS~audiobeds}
          */
         this._audiobedTracks = audiobeds;
-        
+
         /**
          * 'Dictionary' containing info to identify grouped objects
          * @abstract
          * @var {module:bogJS~groupObjects}
          */
-        this._groupObjURLs = groupObjects;        
-        
+        this._groupObjURLs = groupObjects;
+
         /**
          * 'Dictionary' containing info to identify single objects
          * @abstract
@@ -224,10 +224,10 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
 }
 
 ObjectManager.prototype = {
-    
+
     /**
-     * Creates [AudioData]{@link module:irtPlayer~AudioData} and 
-     * [ObjectController]{@link module:bogJS~ObjectController} instances and 
+     * Creates [AudioData]{@link module:irtPlayer~AudioData} and
+     * [ObjectController]{@link module:bogJS~ObjectController} instances and
      * adds the AudioData instances to the {@link module:bogJS~ObjectManager#player}
      */
     init: function(){
@@ -250,11 +250,11 @@ ObjectManager.prototype = {
             this._audiobed = new MediaElementController(this.ctx, a, this._mediaElementTracks);
         }
         if (this._audiobed !== false){
-            // If there is an audiobed, we can trigger the om_ready event even 
+            // If there is an audiobed, we can trigger the om_ready event even
             // though other keyframe assets are not yet ready. We need to trigger
             // the event here in case NO other assets are used.
-            // This is for sure not really a sophisticated way to solve this but it 
-            // should work. In the worst case, the playback will pause again if 
+            // This is for sure not really a sophisticated way to solve this but it
+            // should work. In the worst case, the playback will pause again if
             // the assets are not yet loaded and decoded.
             $(this._audiobed).on('audio_loaded', function(){
                 $(document).triggerHandler('om_ready');
@@ -273,7 +273,7 @@ ObjectManager.prototype = {
                 log.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
-                // confusions and strange behaviours.. 
+                // confusions and strange behaviours..
                 for (var i = 0; i < order.length; i++){
                     this.objects["Bed"+order[i]].audio.disconnect();
                 }
@@ -287,21 +287,21 @@ ObjectManager.prototype = {
             var chOrder = chOrderTest.testChs();
         }
 
-        for (obj in this._audiobedTracks){
+        for (var obj in this._audiobedTracks){
             var trackNr = parseInt(this._audiobedTracks[obj].split("_")[1]);
             this.objects[obj] = new ObjectController(this.ctx, this._audiobed.gainController[trackNr]);
             this.objects[obj].audio._id = obj;
             this.objects[obj].panner._id = obj;
         }
-        
-        for (kf in this._groupObjURLs){
+
+        for (var kf in this._groupObjURLs){
             this._groupObjPlayers[kf] = {};
             this._kf_canplay[kf] = {};
-            for (group in this._groupObjURLs[kf]){
+            for (var group in this._groupObjURLs[kf]){
                 this._kf_canplay[kf][group] = false;
                 var player = new IRTPlayer(this.ctx);
                 $(player).on('player_ready', this._loadedStateDelegate(kf, group));
-                for (idx in this._groupObjURLs[kf][group]){
+                for (var idx in this._groupObjURLs[kf][group]){
                     var obj = this._groupObjURLs[kf][group][idx];
                     var url = this._audioURLs[obj];
                     var audioInstance = new AudioData(this.ctx, url);
@@ -314,12 +314,12 @@ ObjectManager.prototype = {
             }
         }
 
-        for (kf in this._singleObjURLs){
+        for (var kf in this._singleObjURLs){
             this._singleObjAudios[kf] = {};
             if (!this._kf_canplay[kf]){
                 this._kf_canplay[kf] = {};
             }
-            for (idx in this._singleObjURLs[kf]){
+            for (var idx in this._singleObjURLs[kf]){
                 var obj = this._singleObjURLs[kf][idx];
                 var url = this._audioURLs[obj];
                 this._kf_canplay[kf][obj] = false;
@@ -414,7 +414,7 @@ ObjectManager.prototype = {
         }
         this.playing = false;
     },
-    
+
     /**
      * Will change the playback position of all single, group and audiobed
      * signals. Further, the closes keyframe ahead of the passed time will be
@@ -429,13 +429,13 @@ ObjectManager.prototype = {
 
         // works even in case the keys are strings
         var closest_kf = _.min(times); //Get the lowest numberin case it match nothing.
-        for(var i = 0; i < times.length; i++){ 
+        for(var i = 0; i < times.length; i++){
             if ((times[i] <= time) && (times[i] > closest_kf)){
                 closest_kf = times[i];
             }
         }
         this._handleKeyframe(closest_kf);
-        
+
         for (key in this._evts){
             var evt = this._evts[key];
             var evt_time = parseFloat(key);
@@ -455,10 +455,10 @@ ObjectManager.prototype = {
                 var audioNewPos = time - audioStartPos;
                 // negative time values shall stop the signal.
                 if (audioNewPos <= 0){
-                    this._singleObjAudios[kf][idx].stop();  
+                    this._singleObjAudios[kf][idx].stop();
                 } else {
                     // should stop audio if audioNewPos > duration
-                    this._singleObjAudios[kf][idx].setTime(audioNewPos);  
+                    this._singleObjAudios[kf][idx].setTime(audioNewPos);
                     log.debug("Set audio " + idx + " to position " + audioNewPos);
                 }
             }
@@ -470,19 +470,19 @@ ObjectManager.prototype = {
                 var audioNewPos = time - audioStartPos;
                 // negative time values shall stop the signal.
                 if (audioNewPos <= 0){
-                    this._groupObjPlayers[kf][group].stop();  
+                    this._groupObjPlayers[kf][group].stop();
                 } else {
                     // should stop audio if audioNewPos > duration
-                    this._groupObjPlayers[kf][group].setTime(audioNewPos);  
+                    this._groupObjPlayers[kf][group].setTime(audioNewPos);
                     log.debug("Set group " + group + " to position " + audioNewPos);
                 }
             }
-        }         
+        }
         if (this._audiobed !== false){
             this._audiobed.setTime(time);
         }
     },
-    
+
     /**
      * Toggle panning type between Headphones (binaural) and Stereo rendering
      */
@@ -495,7 +495,7 @@ ObjectManager.prototype = {
             this._panningType = "HRTF";
         }
     },
-    
+
     /**
      * @param {("HRTF"|"equalpower")} type - Panning type for all
      * objects
@@ -508,12 +508,12 @@ ObjectManager.prototype = {
     },
 
     /**
-     * @returns {("HRTF"|"equalpower")} panningType 
+     * @returns {("HRTF"|"equalpower")} panningType
      */
     getPanningType: function(){
         return this._panningType;
     },
-    
+
     /**
      * Sets listener orientation. Coordinate usage as intended by the Web
      * Audio API. See also {@link https://webaudio.github.io/web-audio-api/#the-audiolistener-interface}
@@ -557,7 +557,7 @@ ObjectManager.prototype = {
     getListenerPosition: function(){
         return this._listenerPosition;
     },
-    
+
     _handleKeyframe: function(key){
         log.debug("Activating keyframe: " + key);
         var keyframe = this._keyframes[key];
@@ -570,8 +570,8 @@ ObjectManager.prototype = {
                 var params = triplet.params;
                 if (cmd === "position"){
                     this.objects[obj].setPosition(params);
-                    /** 
-                     * Will be fired if object from list gets new Position as per 
+                    /**
+                     * Will be fired if object from list gets new Position as per
                      * the scene data
                      * @event module:bogJS~ObjectManager#om_newPosition
                      * @property {string} obj - Name of object
@@ -581,7 +581,7 @@ ObjectManager.prototype = {
                 }
                 else if (cmd === "gain"){
                     this.objects[obj].setGain(params);
-                    /** 
+                    /**
                      * Will be fired if object from list gets new Gain
                      * value as per scene data / {@link module:bogJS~ObjectManager#_keyframes}
                      * @event module:bogJS~ObjectManager#om_newGain
@@ -593,8 +593,8 @@ ObjectManager.prototype = {
                 else if (cmd === "track_mapping"){
                     var url = params;
                     if (url in this._kfMapping === false){
-                        this._kfMapping[url] = obj; 
-                    } 
+                        this._kfMapping[url] = obj;
+                    }
                     else if ((url in this._kfMapping === true) && (this._kfMapping[url] !== obj)){
                         var objs = [];
                         var alreadyThere = [this._kfMapping[url]];
@@ -610,7 +610,7 @@ ObjectManager.prototype = {
                         state = params;
                     }
                     this.objects[obj].setStatus(state);
-                    /** 
+                    /**
                      * Will be fired if object from list has new State
                      * @event module:bogJS~ObjectManager#om_isActive
                      * @property {string} obj - Name of object
@@ -643,7 +643,7 @@ ObjectManager.prototype = {
             }
         }
 
-        // now check if all assets are ready for playing: 
+        // now check if all assets are ready for playing:
         for (var el in this._kf_canplay[kf]){
             log.debug(el);
             if (this._kf_canplay[kf][el] === false){
@@ -670,7 +670,7 @@ ObjectManager.prototype = {
             }
         }
     },
-    
+
     _loadedStateDelegate: function(kf, obj){
         return function(){
             log.debug("Asset now ready: " + obj);
@@ -685,7 +685,7 @@ ObjectManager.prototype = {
             if (this._kf_canplay[kf][obj] !== true){
                 console.debug("We still need to wait for decoding of asset(s)");
                 return;  // break loop and return in case any of the objects is not yet ready
-            } 
+            }
         }
 
         var first_kf = _.min(Object.keys(this._keyframes)); //Get the first keyframe
@@ -697,10 +697,10 @@ ObjectManager.prototype = {
             this.resume();
         }
     },
-    
+
     _handleKeyframeMappings: function(){
         if (JSON.stringify(this._last_kfMapping) !== JSON.stringify(this._kfMapping)){
-            log.info("Track mapping has changed" + JSON.stringify(this._kfMapping));    
+            log.info("Track mapping has changed" + JSON.stringify(this._kfMapping));
             // Firstly disconnect everything to make sure that no old
             // mappings stay connected
             // That means that changes have to be made explicitely and
@@ -712,24 +712,24 @@ ObjectManager.prototype = {
             TODO: Irgendwie herausfinden, was sich zum aktuellen Mapping geändert hat.
             Dann dementsprechend connecten /disconnecten.
             */
-            
+
             // And now connect all the mappings as per the keyframe
             for (key in this._kfMapping){
                 var pannerObjects = [];
                 var objs = this._kfMapping[key];
                 if (typeof objs === "string"){    // == attribute
-                    pannerObjects = this.objects[objs].panner; 
+                    pannerObjects = this.objects[objs].highpass;
                 }
                 else if (typeof objs === "object"){   // == array
                     for (var i = 0; i < objs.length; i++){
                         log.trace("Adding " + objs[i] + " to the pannerObject array");
-                        pannerObjects.push(this.objects[objs[i]].panner);
+                        pannerObjects.push(this.objects[objs[i]].highpass);
                     }
                 }
                 this._audioInstances[key].reconnect(pannerObjects);
                 log.debug("Reconnecting " + key + " with " + objs);
-                
-                /** 
+
+                /**
                  * Will be fired if track mapping for object from list changes
                  * @event module:bogJS~ObjectManager#om_newTrackMapping
                  * @property {string} obj - Name of object
@@ -740,7 +740,7 @@ ObjectManager.prototype = {
         }
         this._last_kfMapping = JSON.parse(JSON.stringify(this._kfMapping));  // making a "copy" and not a reference
     },
-        
+
     _processCurrentKeyframes: function(){
         for (key in this._keyframes){
             //console.log(key);
@@ -748,7 +748,7 @@ ObjectManager.prototype = {
             this._evts[key] = this._clock.setTimeout(this._buildKeyframeCallback(key, relTime),relTime);
         }
     },
-    
+
     _buildKeyframeCallback: function(key, relTime){
         var that = this;
         return function(){
@@ -757,7 +757,7 @@ ObjectManager.prototype = {
             log.debug('Keyframe ' + key + ' reached at context time: ' + relTime);
         }
     },
-    
+
     /*
     update: function(){
         log.trace("Updating scene..")
@@ -779,7 +779,7 @@ ObjectManager.prototype = {
 
 
     /**
-     * Sets RollOffFactor for all objects via 
+     * Sets RollOffFactor for all objects via
      * {@link module:bogJS~ObjectController#setRollOffFactor}
      * @param factor
      */
@@ -826,12 +826,18 @@ ObjectManager.prototype = {
         this._triggerChange();
     },
 
+    setHighpassFreq: function(freq){
+        for (var key in this.objects){
+            this.objects[key].setHighpassFreq(freq);
+        }
+    },
+
     /**
      * @private
-     * As Chrome (FF works) does not automatically use the new paramters of 
+     * As Chrome (FF works) does not automatically use the new paramters of
      * distanceModle, refDistance and maxDistance, we need to trigger a change
      * by ourself. The additional value of 0.000001 for x seems to be the
-     * threshold for Chrome to change the rendering. 
+     * threshold for Chrome to change the rendering.
      */
     _triggerChange: function(){
         var pos = this.getListenerPosition();
