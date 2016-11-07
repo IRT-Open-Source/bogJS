@@ -10,7 +10,9 @@
 //var log = require('loglevel');
 //var _ = require('underscore');
 window.$ = require('jquery');
-require('jquery-ui/draggable');
+require('jquery-ui-browserify');
+//require('jquery-ui/ui/widgets/mouse');
+//require('jquery-ui/ui/widgets/draggable');
 require('jquery-mousewheel')($);
 require('jquery.transit');
 //var ObjectManager = require('./object_manager');

@@ -18,15 +18,17 @@
   },
   "browserify": {
     "transform": [
-      "commitify"
+      "commitify",
+      "deamdify"
     ]
   },
   "author": "Michael Weitnauer",
   "license": "MIT",
   "dependencies": {
+    "deamdify": "^0.2.0",
     "jquery": "^2.2.0",
     "jquery-mousewheel": "^3.1.13",
-    "jquery-ui": "^1.10.5",
+    "jquery-ui-browserify": "^1.11.0-pre-seelio",
     "jquery.transit": "^0.9.12",
     "loglevel": "^1.4.0",
     "underscore": "^1.8.3",
