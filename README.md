@@ -371,3 +371,4 @@ This framework is published under the [MIT](./LICENSE) License.
 - [loglevel](https://github.com/pimterry/loglevel)
 - [underscore.js](https://github.com/jashkenas/underscore)
 - [WAAClock.js](https://github.com/sebpiq/WAAClock)
+- [Bootstrap](https://github.com/twbs/bootstrap)
