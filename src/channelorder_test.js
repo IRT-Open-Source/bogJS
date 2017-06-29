@@ -108,11 +108,11 @@ ChannelOrderTest.prototype = {
             } else if (unique.length === this._tracks){
                 last_unique = unique;
             }
-            
+
             log.debug("Channel order not yet detected. Iteration:  " + this._counter);
             if (this._counter >= 5){
                 console.warn("Channel order not detectable. Stop trying and trigger default values.");
-                var order = _.range(this._tracks);
+                order = _.range(this._tracks);
                 $(this).triggerHandler('order_ready', [order]);
                 this.audio.pause();
             }
