@@ -143,7 +143,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this._kfMapping = {};
     this._last_kfMapping = {};
 
-    this._audiobedTracks = {}
+    this._audiobedTracks = {};
     this._groupObjURLs = {};
     this._singleObjURLs = {};
     this._audiobed = false;
@@ -228,7 +228,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
         this.init();
     }.bind(this));
     this.reader.load(url);
-}
+};
 
 ObjectManager.prototype = {
 
@@ -356,7 +356,7 @@ ObjectManager.prototype = {
                 this._audiobed.play();
             }
             var that = this;
-            var evt = this._clock.setTimeout(function(){log.debug(that.ctx.currentTime)}, 1).repeat(1);
+            var evt = this._clock.setTimeout(function(){log.debug(that.ctx.currentTime);}, 1).repeat(1);
             this.playing = true;
             return true;
         } else {
@@ -409,13 +409,13 @@ ObjectManager.prototype = {
         if (this._audiobed !== false){
             this._audiobed.stop();
         }
-        for (kf in this._groupObjPlayers){
-            for (group in this._groupObjPlayers[kf]){
+        for (var kf in this._groupObjPlayers){
+            for (var group in this._groupObjPlayers[kf]){
                 this._groupObjPlayers[kf][group].stop();
             }
         }
-        for (kf in this._singleObjAudios){
-            for (idx in this._singleObjAudios[kf]){
+        for (var kf in this._singleObjAudios){
+            for (var idx in this._singleObjAudios[kf]){
                 this._singleObjAudios[kf][idx].stop();
             }
         }
@@ -443,7 +443,7 @@ ObjectManager.prototype = {
         }
         this._handleKeyframe(closest_kf);
 
-        for (key in this._evts){
+        for (var key in this._evts){
             var evt = this._evts[key];
             var evt_time = parseFloat(key);
             var newTime = evt_time - time + this.ctx.currentTime;
@@ -508,7 +508,7 @@ ObjectManager.prototype = {
      * objects
      */
     setPanningType: function(type){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setPanningType(type);
         }
         this._panningType = type;
@@ -609,7 +609,7 @@ ObjectManager.prototype = {
                     }
                 }
                 else if (cmd === "is_present"){
-                    if (params == 0) {
+                    if (params === 0) {
                         state = false;
                     } else if (params == 1) {
                         state = true;
@@ -712,7 +712,7 @@ ObjectManager.prototype = {
             // mappings stay connected
             // That means that changes have to be made explicitely and
             // not implicitely!
-            for (key in this._audioInstances){
+            for (var key in this._audioInstances){
                 this._audioInstances[key].disconnect();
             }
             /*
@@ -721,7 +721,7 @@ ObjectManager.prototype = {
             */
 
             // And now connect all the mappings as per the keyframe
-            for (key in this._kfMapping){
+            for (var key in this._kfMapping){
                 var pannerObjects = [];
                 var objs = this._kfMapping[key];
                 if (typeof objs === "string"){    // == attribute
@@ -749,7 +749,7 @@ ObjectManager.prototype = {
     },
 
     _processCurrentKeyframes: function(){
-        for (key in this._keyframes){
+        for (var key in this._keyframes){
             //console.log(key);
             var relTime = parseFloat(this.ctx.currentTime - this._startTime + parseFloat(key));
             this._evts[key] = this._clock.setTimeout(this._buildKeyframeCallback(key, relTime),relTime);
@@ -762,7 +762,7 @@ ObjectManager.prototype = {
             that._handleKeyframe(key);
             that._currentKeyframeIndex = parseFloat(key);
             log.debug('Keyframe ' + key + ' reached at context time: ' + relTime);
-        }
+        };
     },
 
     /*
@@ -791,7 +791,7 @@ ObjectManager.prototype = {
      * @param factor
      */
     setRollOffFactor: function(factor){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setRollOffFactor(factor);
         }
         this._triggerChange();
@@ -803,7 +803,7 @@ ObjectManager.prototype = {
      * @param model
      */
     setDistanceModel: function(model){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setDistanceModel(model);
         }
         this._triggerChange();
@@ -815,7 +815,7 @@ ObjectManager.prototype = {
      * @param refDistance
      */
     setRefDistance: function(refDistance){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setRefDistance(refDistance);
         }
         this._triggerChange();
@@ -827,7 +827,7 @@ ObjectManager.prototype = {
      * @param maxDistance
      */
     setMaxDistance: function(maxDistance){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setMaxDistance(maxDistance);
         }
         this._triggerChange();
@@ -851,7 +851,7 @@ ObjectManager.prototype = {
         this.setListenerPosition(pos[0] + 0.000001, pos[1], pos[2]);
         this.setListenerPosition(pos[0], pos[1], pos[2]);
     }
-}
+};
 
 
 
