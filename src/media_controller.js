@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /**
  * @file media_controller.js
  * @author Michael Weitnauer: {@link weitnauer@irt.de}
@@ -20,7 +21,7 @@ var log = require('loglevel');
  * @param [targetNode=ctx.destination] - Web Audio API node to which the
  * output of the GainController shall be connected to.
  */
-var GainController = function(ctx, targetNode){
+var GainController = function(ctx, targetNode=ctx.destination){
     this._gain = 1;
     this.gainNode = ctx.createGain();
 
@@ -30,7 +31,6 @@ var GainController = function(ctx, targetNode){
     this.highpass.connect(this.gainNode);
     this.setHighpassFreq(80);
 
-    var targetNode = targetNode || ctx.destination;
     // FIXME: if applied here, the gainNode stays
     // connected with ctx.destination:
     // this.reconnect(targetNode);

@@ -38,7 +38,7 @@ var log = require('loglevel');
  * @param {String} [root="signals/order"] - path to test encoded files
  * @fires module:bogJS~ChannelOrderTest#order_ready
  */
-var ChannelOrderTest = function(container, tracks, ctx, root){
+var ChannelOrderTest = function(container, tracks, ctx, root="signals/order/"){
     if (typeof ctx === 'undefined') {
         if (typeof AudioContext !== 'undefined') {
             var ctx = new AudioContext();
@@ -62,7 +62,6 @@ var ChannelOrderTest = function(container, tracks, ctx, root){
         //this.analysers[i].connect(this.ctx.destination);
     }
     //var root = root || "http://lab.irt.de/demos/order/";
-    var root = root || "signals/order/";
     if (container === "webm"){   // we assume opus if webm is used
         container = "opus";
     }
