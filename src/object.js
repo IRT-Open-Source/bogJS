@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /**
  * @file object.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -23,7 +24,7 @@ var log = require('loglevel');
  * shall be connected to.
  */
 
-var ObjectController = function(ctx, sourceNode, targetNode) {
+var ObjectController = function(ctx, sourceNode, targetNode=ctx.destination) {
     /**
      * Instance of Web Audio Panner node
      * @var {Object.<AudioContext.PannerNode>}
@@ -50,8 +51,6 @@ var ObjectController = function(ctx, sourceNode, targetNode) {
     this._state = false;
 
     this.setAudio(sourceNode);
-
-    var targetNode = targetNode || ctx.destination;
     this.panner.connect(targetNode);
 };
 
