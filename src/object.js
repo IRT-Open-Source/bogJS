@@ -252,6 +252,6 @@ ObjectController.prototype = {
     setHighpassFreq: function(freq){
         this.highpass.frequency.value = freq;
     }
-}
+};
 
 module.exports = ObjectController;

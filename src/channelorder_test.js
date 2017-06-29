@@ -1,6 +1,7 @@
+/*jshint esversion: 6 */
 /**
  * @file channelorder_test.js
- * @author Michael Weitnauer: {@link weitnauer@irt.de} 
+ * @author Michael Weitnauer: {@link weitnauer@irt.de}
  */
 
 /**
@@ -26,13 +27,13 @@ var log = require('loglevel');
  * ChannelOrderTest will start loading, deconding and playing as soon as the
  * instance of the class is created. The test files will be looped and for
  * each loop, the [testChs]{@link module:bogJS~ChannelOrderTest#testChs} method
- * is called. If the test file has been played five times and no order could 
+ * is called. If the test file has been played five times and no order could
  * be detected, the default order will be triggered.
  * @constructor
  *
  * @param {String} container - to be tested file extension w/o dot ("mp4")
  * @param {Number} tracks - To be tested channel number for container
- * @param {Object.<AudioContext>} [ctx=AudioContext] - if no AudioContext 
+ * @param {Object.<AudioContext>} [ctx=AudioContext] - if no AudioContext
  *      instance is passed, it will be created.
  * @param {String} [root="signals/order"] - path to test encoded files
  * @fires module:bogJS~ChannelOrderTest#order_ready
@@ -49,7 +50,7 @@ var ChannelOrderTest = function(container, tracks, ctx, root){
     }
     /** @var {Object.<AudioContext>} */
     this.ctx = ctx;
-    
+
     this._tracks = parseInt(tracks);
     this._splitter = this.ctx.createChannelSplitter(this._tracks);
     this.analysers = [];
@@ -65,13 +66,13 @@ var ChannelOrderTest = function(container, tracks, ctx, root){
     if (container === "webm"){   // we assume opus if webm is used
         container = "opus";
     }
-    var url = root+tracks+"chs."+container
+    var url = root+tracks+"chs."+container;
     this._loadSound(url);
-}
+};
 
 
 ChannelOrderTest.prototype = {
-    /** 
+    /**
      * Load and test passed audio signal
      *
      * @protected
@@ -95,7 +96,7 @@ ChannelOrderTest.prototype = {
             // to make sure we have a reliable result
             if ((unique.length === this._tracks) && (_.isEqual(last_unique, unique))) {
                 log.info('Channel order detected: ' + order);
-                
+
                 /**
                  * If channel order was detected and ensured, the event is
                  * fired with channel order as array.
@@ -132,9 +133,9 @@ ChannelOrderTest.prototype = {
         var freqBins = [];
         for (var i = 0; i < this._tracks; i++){
             // Float32Array should be the same length as the frequencyBinCount
-            freqBins[i] = new Float32Array(this.analysers[i].frequencyBinCount);             
+            freqBins[i] = new Float32Array(this.analysers[i].frequencyBinCount);
             // fill the Float32Array with data returned from getFloatFrequencyData()
-            this.analysers[i].getFloatFrequencyData(freqBins[i]); 
+            this.analysers[i].getFloatFrequencyData(freqBins[i]);
         }
         this.freqBins = freqBins;
         //this.audio.pause();
@@ -154,7 +155,7 @@ ChannelOrderTest.prototype = {
         }
         log.debug("Decoded indices: " + indices);
         // to avoid the array is mutated and numerical sorted
-        var sorted_indices = indices.concat().sort(function(a, b){return a-b});          
+        var sorted_indices = indices.concat().sort(function(a, b){return a-b;});
         log.debug("Sorted indices: " + sorted_indices);
         var normalized_indices = [];
         for (var i = 0; i < indices.length; i++){
@@ -162,6 +163,6 @@ ChannelOrderTest.prototype = {
         }
         return normalized_indices;
     }
-}
+};
 
 module.exports = ChannelOrderTest;

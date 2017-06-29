@@ -34,7 +34,7 @@ var GainController = function(ctx, targetNode){
     // FIXME: if applied here, the gainNode stays
     // connected with ctx.destination:
     // this.reconnect(targetNode);
-}
+};
 
 GainController.prototype = {
 
@@ -113,7 +113,7 @@ GainController.prototype = {
     setHighpassFreq: function(freq){
         this.highpass.frequency.value = freq;
     }
-}
+};
 
 
 

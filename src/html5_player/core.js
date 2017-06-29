@@ -1,6 +1,6 @@
 /**
  * @file irtPlayer_new.js
- * @author Michael Weitnauer: {@link weitnauer@irt.de} 
+ * @author Michael Weitnauer: {@link weitnauer@irt.de}
  */
 
 /**
@@ -35,7 +35,7 @@
  */
 
 /**
- * @module irtPlayer 
+ * @module irtPlayer
  *
  */
 
@@ -72,23 +72,23 @@ var AudioData = function(ctx, url, targetNode, checkSupportFlag) {
     /** @var {Object.<AudioContext>} */
     this.ctx = ctx;
     this.url = url;
-    
+
     this._playing = false;
     this._looping = true;
     this._rangeStart = 0;
     this._rangeEnd = 0;
     this._startTime = 0;
     this._startOffset = 0;
-    
+
     /** @var {Object.<GainNode>} */
-    this.gainNode = this.ctx.createGain(); 
+    this.gainNode = this.ctx.createGain();
     this.gain = this.getGain();
     var targetNode = targetNode || this.ctx.destination;
     this.gainNode.connect(targetNode);  // FF either refuses to break this connection or simply displays a no more existing connection..
 }
 
 AudioData.prototype = {
-    
+
     /**
      * Create instance of new AudioBufferSource every time {@link
      * AudioData#play} is called and initialize it.
@@ -104,15 +104,15 @@ AudioData.prototype = {
         this.audio.loopStart = this._rangeStart;
         this.audio.loopEnd = this._rangeEnd;
         this.audio.onended = this._onendedHandler.bind(this);
-        
-        /** 
+
+        /**
          * Will be fired once the new AudioBufferSource has been
          * initilized.
          * @event module:irtPlayer~AudioData#audio_init
          */
         $(this).triggerHandler("audio_init");
     },
-    
+
     /**
      * Will be called if AudioBufferSource instance has ended
      *
@@ -122,7 +122,7 @@ AudioData.prototype = {
         //log.debug("Audio buffer has ended!");
         this._playing = false;
         //this._startOffset = 0;
-        
+
         /**
          * Will be fired once the playback has ended
          * @event module:irtPlayer~AudioData#audio_ended
@@ -131,9 +131,9 @@ AudioData.prototype = {
     },
 
     load: function(){
-        this._loadSound(this.url);    
+        this._loadSound(this.url);
     },
-    
+
     /**
     * Start playback of audio signal
     *
@@ -150,13 +150,13 @@ AudioData.prototype = {
                 var offset = (this._rangeStart + this._startOffset) % buffer_duration;
                 var duration = this._rangeEnd - offset;
                 log.debug("Offset: " + offset + "   Duration: " + duration);
-                
+
                 // Passing a duration to start() causes undefined
                 // situation in current versions of Chrome. FF, Safari
                 // and Opera seem to treat this situation properly. See
                 // also https://github.com/WebAudio/web-audio-api/issues/421
-                this.audio.start(0, offset, duration); 
-                //this.audio.start(0, offset); 
+                this.audio.start(0, offset, duration);
+                //this.audio.start(0, offset);
             } else {
                 log.debug("Starting playback at " + pos);
                 this._startOffset = pos;
@@ -182,14 +182,14 @@ AudioData.prototype = {
             this.audio.stop(0);
             // Measure how much time passed since the last pause.
             this._startOffset += this.audio.context.currentTime - this._startTime;
-            this._playing = false; 
+            this._playing = false;
             log.debug("Start offset: "+ this._startOffset);
         }
     },
 
-    
+
     /**
-     * Stops playback - if method is called during the playback 
+     * Stops playback - if method is called during the playback
      * is stopped, the thrown error will be catched.
      */
     stop: function(){
@@ -216,7 +216,7 @@ AudioData.prototype = {
             log.warn("Gain values must be between 0 and 1");
         }
     },
-    
+
     /**
      * Returns current gain value of {@link AudioData} instance
      *
@@ -257,9 +257,9 @@ AudioData.prototype = {
             log.warn("Can't set loop state: " + err);
         }
     },
-    
+
     /**
-     * Sets start position for playback 
+     * Sets start position for playback
      *
      * @param {float} pos  - Start playback always at passed
      * position
@@ -279,9 +279,9 @@ AudioData.prototype = {
             log.warn("Can't set loop start yet.." + err);
         }
     },
-    
+
     /**
-     * Sets end position for playback 
+     * Sets end position for playback
      *
      * @param {float} pos  - Playback end always at passed
      * position
@@ -308,16 +308,16 @@ AudioData.prototype = {
     mute: function(){
         this.setGain(0.0);
     },
-    
+
     /**
      * Unmutes {@link AudioData} instance
      */
     unmute: function(){
         this.setGain(1.0);
-    }, 
-    
+    },
+
     /**
-     * Jump to passed position during playback 
+     * Jump to passed position during playback
      *
      * @param {float} pos  - Must be between 0 and {@link
      * AudioData._rangeEnd}
@@ -341,7 +341,7 @@ AudioData.prototype = {
             return this._startOffset;
         }
     },
-    
+
     /**
     * Disconnects and reconnects {@link AudioData} instance to passed
     * AudioNode(s)
@@ -353,14 +353,14 @@ AudioData.prototype = {
         this.disconnect();
         if (Object.prototype.toString.call(nodes) != "[object Array]"){          // == single Node
             this.gainNode.connect(nodes);
-        } 
+        }
         else {                                          // == array of Nodes
             for (var i=0; i < nodes.length; i++){
                 this.gainNode.connect(nodes[i]);
             }
         }
     },
-    
+
     /**
     * This method will disconnect the {@link AudioData} instance from
     * all connected nodes (afterwards). Should be mostly
@@ -369,11 +369,11 @@ AudioData.prototype = {
     disconnect: function(){
         this.gainNode.disconnect();
     },
-    
-    /** 
+
+    /**
      * Method will check whether the passed URL has an extension.
-     * Additionaly, {@link AudioData#_checkSupport} will be executed to 
-     * identify the possible containers / codecs.  
+     * Additionaly, {@link AudioData#_checkSupport} will be executed to
+     * identify the possible containers / codecs.
      *
      * @protected
      * @param {string} url - URL
@@ -387,11 +387,11 @@ AudioData.prototype = {
         var re = /\.[0-9a-z]{3,4}$/i;   // strips the file extension (must be 3 or 4 characters)
         var ext = re.exec(url);
         if (ext == null){
-            if (supports.indexOf(".mp4") > -1) {
-                var src = url + ".mp4";
-            }
-            else if (supports.indexOf(".opus") > -1) {
+            if (supports.indexOf(".opus") > -1) {
                 var src = url + ".opus";
+            }
+            else if (supports.indexOf(".mp4") > -1) {
+                var src = url + ".mp4";
             }
             /*
             else if (supports.indexOf(".m4a") > -1) {
@@ -416,8 +416,8 @@ AudioData.prototype = {
         }
         return src
     },
-    
-    /** 
+
+    /**
      * Detects whether the browser can play one of the listed containers
      * / codecs
      *
@@ -448,8 +448,8 @@ AudioData.prototype = {
         log.debug("Your browser seems to support these containers: " + supports);
         return supports;
     },
-    
-    /** 
+
+    /**
      * Load passed audio signal
      *
      * @protected
@@ -512,29 +512,29 @@ var IRTPlayer = function(ctx, sounds, checkSupportFlag){
     var checkSupportFlag = typeof checkSupportFlag !== 'undefined' ? checkSupportFlag : true;
     this._checkSupport = checkSupportFlag;
     this.ctx = ctx;
-    
+
     /**
      * @description Flag if audio signals will be looped
      * @var {boolean} */
     this.loopingState = true;
 
-    /** 
-     * @description Array of {@link AudioData} instances 
+    /**
+     * @description Array of {@link AudioData} instances
      * @var {AudioData[]} */
     this.signals = [];
-    
+
     /** @var {boolean} */
     this.playing = false;
     this.canplay = false;
     this.init(sounds);
-    
+
     /**
      * @description Global volume for all {@link AudioData} instances
      * @var {float} */
     this.vol = 1.0;
 
-    /** 
-     * @description Has array entry integer of currently active file. 
+    /**
+     * @description Has array entry integer of currently active file.
      * See {@link IRTPlayer#muteOthers} or  {@link IRTPlayer#attenuateOthers}
      * @var {integer}
      */
@@ -543,13 +543,13 @@ var IRTPlayer = function(ctx, sounds, checkSupportFlag){
     this._loaded_counter = 0;
     this._ended_counter = 0;
     }
-    
+
 IRTPlayer.prototype = {
-    
+
     /**
      * Adds all audio signals of passed array to the player
      *
-     * @param {string[]} sounds - Array of URLs 
+     * @param {string[]} sounds - Array of URLs
      */
     init: function(sounds){
         if (typeof sounds != "undefined"){
@@ -581,12 +581,12 @@ IRTPlayer.prototype = {
     addURL: function(url){
         var audio = new AudioData(this.ctx, url, this.ctx.destination, this._checkSupport);
         this.addAudioData(audio);
-        
+
         // The event listener must be registered before the event trigger can be
         // created! So we call the load() method explicitely afterwards.
         audio.load();
     },
-    
+
     /**
      * Will add {@link AudioData} instances to the {@link IRTPlayer} instance
      *
@@ -599,17 +599,17 @@ IRTPlayer.prototype = {
     },
 
     _addEventListener: function(audioData){
-        // NOTE: This is likely working only due to the delayed loading of 
+        // NOTE: This is likely working only due to the delayed loading of
         // the audio files. As we all know, the event listener must be already registered
-        // before the event trigger can be registered as well. So in the worst case, 
-        // the audio files will be loaded and decoded _before_ the listener is 
+        // before the event trigger can be registered as well. So in the worst case,
+        // the audio files will be loaded and decoded _before_ the listener is
         // registered which means that NO event will be triggered and received..!
         // TODO: find a good workaround for this issue!
         $(audioData).on("audio_loaded", function(){
             this._loaded_counter += 1;
             if (this._loaded_counter == this.signals.length){
                 log.debug("All buffers are loaded & decoded");
-                /** 
+                /**
                  * Will be fired to the DOM once all audio signals are loaded.
                  * This event is triggered to the DOM and not to the object instance
                  * as this would mean that the listener would have to be registered on
@@ -628,7 +628,7 @@ IRTPlayer.prototype = {
             if (this._ended_counter == this.signals.length){
                 this.playing = false;
                 log.debug("All buffers ended");
-                /** 
+                /**
                  * Will be fired to the DOM once all audio signals are loaded.
                  * This event is triggered to the DOM and not to the object instance
                  * as this would mean that the listener would have to be registered on
@@ -649,10 +649,10 @@ IRTPlayer.prototype = {
             this.play();
         }
         else {
-            this.pause();    
+            this.pause();
         }
     },
-    
+
     /**
      * Starts playback of all audio sources in {@link IRTPlayer#signals}
      */
@@ -662,7 +662,7 @@ IRTPlayer.prototype = {
         this._do('setLoopState', this.loopingState);
         this._ended_counter = 0;
     },
-    
+
     /**
      * Pauses playback of all audio sources in {@link IRTPlayer#signals}
      */
@@ -670,7 +670,7 @@ IRTPlayer.prototype = {
         this._do('pause');
         this.playing = false;
     },
-    
+
     /**
      * Stops playback of all audio sources in {@link IRTPlayer#signals}
      */
@@ -697,15 +697,15 @@ IRTPlayer.prototype = {
             log.error("Passed array index invalid!")
         }
     },
-    
+
     /**
      * Will unmute all audio sources in {@link IRTPlayer#signals}
-     */ 
+     */
     unmuteAll: function(){
         this._do('unmute');
         this.activeSignal = null;
     },
-    
+
     /**
      * Will attenuate all audio sources of {@link IRTPlayer#signals} but the
      * one with the passed index. The active one will have gain value of
@@ -726,7 +726,7 @@ IRTPlayer.prototype = {
             log.error("Passed array index invalid!")
         }
     },
-    
+
     /**
      * Disables / enables looping of the audio sources
      */
@@ -739,9 +739,9 @@ IRTPlayer.prototype = {
         }
         this._do('toggleLoop');
     },
-    
+
     /**
-     * Sets start position for playback 
+     * Sets start position for playback
      *
      * @param {float} pos  - Start playback always at passed
      * position for all audio sources in {@link IRTPlayer#signals}
@@ -750,9 +750,9 @@ IRTPlayer.prototype = {
         log.info("Range start: " + pos);
         this._do('setRangeStart', pos);
     },
-    
+
     /**
-     * Sets end position for playback 
+     * Sets end position for playback
      *
      * @param {float} pos  - End playback always at passed
      * position for all audio sources in {@link IRTPlayer#signals}
@@ -761,17 +761,17 @@ IRTPlayer.prototype = {
         log.info("Range end: " + pos);
         this._do('setRangeEnd', pos);
     },
-    
+
     /**
-     * Jump to passed position during playback 
+     * Jump to passed position during playback
      *
      * @param {float} time  - Must be between 0 and {@link
      * AudioData#_rangeEnd}
      */
     setTime: function(time){
         this._do('setTime', time);
-    }, 
-    
+    },
+
     /**
      * Returns current position of playback
      * @return {number} pos - Current playback position
@@ -783,7 +783,7 @@ IRTPlayer.prototype = {
     /**
      * Helper function to apply AudioData methods for all instances in
      * {@link IRTPlayer#signals} array
-     * @param {string} func - Name of the method to be executed 
+     * @param {string} func - Name of the method to be executed
      * @param {...args} args - variable number of additional arguments that
      * should be passed to the method
      * @protected

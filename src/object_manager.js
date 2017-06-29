@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /**
  * @file object_manager.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -170,7 +171,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this._listenerOrientation = [0, 0, -1];
     this.setListenerOrientation(0, 0, -1);
 
-    $(this.reader).on('scene_loaded', function(e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds){
+    $(this.reader).on('scene_loaded', function(e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo){
         log.debug('Scene data loaded!');
 
         /**
@@ -193,6 +194,12 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
          * @var {module:bogJS~sceneInfo}
          */
         this._sceneInfo = sceneInfo;
+        /**
+         * 'Dictionary' containing interactive info
+         * @abstract
+         * @var {module:bogJS~interactiveInfo}
+         */
+        this.interactiveInfo = interactiveInfo;
         this.object_count = sceneInfo.object_count || 0;
         this.roomDimensions = sceneInfo.room_dimensions || [10, 10, 3];
         this._listenerPosition = sceneInfo.listener_position || [0, 0, 0];
