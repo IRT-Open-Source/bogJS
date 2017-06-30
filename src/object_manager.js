@@ -75,6 +75,7 @@ var ChannelOrderTest = require('./channelorder_test');
 var AudioData = require('./html5_player/core').AudioData;
 var IRTPlayer = require('./html5_player/core').IRTPlayer;
 var ObjectController = require('./object');
+var GainController = require('./gain_controller');
 var MediaElementController = require('./media_controller');
 var SceneReader = require('./scene_reader');
 
@@ -120,7 +121,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
      * @var {Object.<AudioContext>}
      */
     this.ctx = ctx;
-
+    this.masterGain = new GainController(this.ctx, ctx.destination);
     /**
      * Instance of {@link SceneReader}
      * @var {(CustomReaderInstance|Object.<module:bogJS~SceneReader>)}
@@ -295,7 +296,9 @@ ObjectManager.prototype = {
 
         for (var obj in this._audiobedTracks){
             var trackNr = parseInt(this._audiobedTracks[obj].split("_")[1]);
-            this.objects[obj] = new ObjectController(this.ctx, this._audiobed.gainController[trackNr]);
+            this.objects[obj] = new ObjectController(this.ctx,
+                                                     this._audiobed.gainController[trackNr],
+                                                     this.masterGain.gainNode);
             this.objects[obj].audio._id = obj;
             this.objects[obj].panner._id = obj;
         }
@@ -313,7 +316,9 @@ ObjectManager.prototype = {
                     var audioInstance = new AudioData(this.ctx, url);
                     audioInstance.load();
                     audioInstance.setLoopState(false);
-                    this.objects[obj] = new ObjectController(this.ctx, audioInstance);
+                    this.objects[obj] = new ObjectController(this.ctx,
+                                                             audioInstance,
+                                                             this.masterGain.gainNode);
                     player.addAudioData(audioInstance);
                     this._groupObjPlayers[kf][group] = player;
                 }
@@ -333,7 +338,9 @@ ObjectManager.prototype = {
                 $(audioInstance).on("audio_loaded", this._loadedStateDelegate(kf, obj));
                 audioInstance.load();
                 audioInstance.setLoopState(false);
-                this.objects[obj] = new ObjectController(this.ctx, audioInstance);
+                this.objects[obj] = new ObjectController(this.ctx,
+                                                         audioInstance,
+                                                         this.masterGain.gainNode);
                 this._singleObjAudios[kf][obj] = audioInstance;
             }
         }
@@ -615,11 +622,12 @@ ObjectManager.prototype = {
                 else if (cmd === "is_present"){
                     if (params === 0) {
                         state = false;
-                    } else if (params == 1) {
+                    } else if (params === 1) {
                         state = true;
                     } else {
                         state = params;
                     }
+                    // Removing as it was never really used and conflicts with switchGroups??
                     this.objects[obj].setStatus(state);
                     /**
                      * Will be fired if object from list has new State
