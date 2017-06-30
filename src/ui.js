@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /**
  * @file ui.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -30,8 +31,7 @@ require('jquery.transit');
  * passed, the URL must be passed.
  * @param {number} [loglevel=1] - logging level
  */
-var UIManager = function(om, url, loglevel){
-    var loglevel = loglevel || log.levels.DEBUG;
+var UIManager = function(om, url, loglevel=logl.levels.DEBUG){
     log.setLevel(loglevel);
     this.om = om || new ObjectManager(url);
     this.bg = "";
@@ -47,7 +47,7 @@ var UIManager = function(om, url, loglevel){
     this._soloed = false;
 
     this._enableEventListener();
-}
+};
 
 UIManager.prototype = {
 
@@ -59,7 +59,7 @@ UIManager.prototype = {
      * be returned.
      */
     start: function(){
-        if (this.om.start() == true) {
+        if (this.om.start() === true) {
             var roomsize = [this.om.roomDimensions[0] * this._resizeFactor, this.om.roomDimensions[1] * this._resizeFactor];
             this._setRoomSize(roomsize);
             this._setListenerPosition([this.om._listenerPosition[0],
@@ -82,10 +82,11 @@ UIManager.prototype = {
             });
             $(this.listener).mousewheel(function(event, delta){
                 var angle = that._xyz2angle(that.om.getListenerOrientation());
+                var new_angle = angle;
                 if(delta < 0) {
-                    var new_angle = angle - 5;
+                    new_angle = angle - 5;
                 } else {
-                    var new_angle = angle + 5;
+                    new_angle = angle + 5;
                 }
                 that._setListenerOrientation(new_angle);
                 $('.irt_listener').css({rotate: new_angle});
@@ -117,10 +118,10 @@ UIManager.prototype = {
      * objects so far.
      */
     toggleInteractive: function(){
-        if (this._interactive == false){
+        if (this._interactive === false){
             this._enableInteractive();
         }
-        else if (this._interactive == true){
+        else if (this._interactive === true){
             this._disableInteractive();
         }
     },
@@ -272,8 +273,8 @@ UIManager.prototype = {
                         var xy = that._topleft2xy(topleft);
                         that.om.objects[event.target.id].setPosition([xy[0], 0, -1 * xy[1]]);
                         log.debug("Drag event position: " + topleft);
-                    }
-                , 50)
+                    },
+                50)
             });
             if (!this.om.objects[key].getStatus()){
                 this._displayObject(key, false);
@@ -356,6 +357,6 @@ UIManager.prototype = {
         var angle = Math.atan2(xyz[0], -xyz[2]) / Math.PI * 180;
         return angle;
     }
-}
+};
 
 module.exports = UIManager;
