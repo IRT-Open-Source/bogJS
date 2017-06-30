@@ -8,6 +8,7 @@
  * @module bogJS
  */
 
+var GainController = require('./gain_controller');
 
 /**
  * Represents ObjectController class which has all the logic to control an
