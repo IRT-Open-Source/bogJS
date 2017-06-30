@@ -12,7 +12,6 @@
  */
 
 window.$ = require('jquery');
-var log = require('loglevel');
 
 /**
  * Represents SceneReader class. Will load and parse scene data from URL for the
@@ -72,10 +71,10 @@ SceneReader.prototype = {
                 for (var el in groupObjects[kf][group]){
                     var obj = groupObjects[kf][group][el];
                     var idx = extraObjects[kf].indexOf(obj);
-                    log.debug('Checking for double entry for object ' + obj);
+                    console.debug('Checking for double entry for object ' + obj);
                     if (idx > -1) {
                         extraObjects[kf].splice(idx, 1);
-                        log.debug('Found group object ' + obj + ' also as single objects entry. Removing if from the list.');
+                        console.debug('Found group object ' + obj + ' also as single objects entry. Removing if from the list.');
                     }
                 }
             }
@@ -206,7 +205,7 @@ SceneReader.prototype = {
                         }
                         if (groups[keyframe][params].indexOf(obj) === -1){
                             groups[keyframe][params].push(obj)  // == groups.keyframe.params.push(obj)
-                            log.debug("Adding " + obj + " to group " + params + " at keyframe " + keyframe);
+                            console.debug("Adding " + obj + " to group " + params + " at keyframe " + keyframe);
                         }
                     }
                     var triplet = {};

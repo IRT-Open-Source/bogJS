@@ -10,7 +10,6 @@
  */
 
 window.$ = require('jquery');
-var log = require('loglevel');
 
 
 /**
@@ -156,11 +155,11 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
         this.gainController[i] = new GainController(this.ctx, targetNodeList[i]);
 
         // TODO: Workaround for wrong channel order of decoded bitstream
-        this._splitter.connect(this.gainController[i].highpass, i);
+        this._splitter.connect(this.gainController[i].gainNode, i);
     }
 
     this._mediaElement.onended = function(){
-        log.debug("Audio buffer has ended!");
+        console.debug("Audio buffer has ended!");
         this._playing = false;
 
         /**
@@ -171,12 +170,12 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
     }.bind(this);
 
     this._mediaElement.onstalled = function(){
-        log.info("Pausing playback - need to buffer more");
+        console.info("Pausing playback - need to buffer more");
         this.ctx.suspend();
     }.bind(this);
 
     this._mediaElement.onplaying = function(){
-        log.info("Resuming playback of media element");
+        console.info("Resuming playback of media element");
         if (this.ctx.state === "suspended"){
             this.ctx.resume();
         }
@@ -184,7 +183,7 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
 
     this._mediaElement.oncanplaythrough = function(){
         this.canplay = true;
-        log.info("Playback of media element can start");
+        console.info("Playback of media element can start");
 
         /**
          * Will be fired if media element playback can start
@@ -212,7 +211,7 @@ MediaElementController.prototype = {
         if (typeof pos != 'number'){        // detection with _.isNumber() could be more robust
             this._mediaElement.play();
         } else {
-            log.debug("Starting playback at " + pos);
+            console.debug("Starting playback at " + pos);
             this.setTime(pos);
             this._mediaElement.play()
         }

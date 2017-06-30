@@ -70,7 +70,6 @@
 
 window.$ = require('jquery');
 window._ = require('underscore');
-window.log = require('loglevel');
 var WAAClock = require('waaclock');
 var ChannelOrderTest = require('./channelorder_test');
 var AudioData = require('./html5_player/core').AudioData;
@@ -172,7 +171,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this.setListenerOrientation(0, 0, -1);
 
     $(this.reader).on('scene_loaded', function(e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo){
-        log.debug('Scene data loaded!');
+        console.debug('Scene data loaded!');
 
         /**
          * 'Dictionary' containing keyframes + commands triplets per keyframe.
@@ -265,7 +264,7 @@ ObjectManager.prototype = {
             // the assets are not yet loaded and decoded.
             $(this._audiobed).on('audio_loaded', function(){
                 $(document).triggerHandler('om_ready');
-                log.debug('Audiobed ready for playback');
+                console.debug('Audiobed ready for playback');
             }.bind(this));
             $(this._audiobed).on('audio_ended', function(){
                 $(document).triggerHandler('om_ended');
@@ -277,7 +276,7 @@ ObjectManager.prototype = {
             container = container.split('.').join(""); // removes dot from the string
             var chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
             $(chOrderTest).on('order_ready', function(e, order){
-                log.debug('Got channel order: ' + order);
+                console.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
                 // confusions and strange behaviours..
@@ -287,7 +286,7 @@ ObjectManager.prototype = {
                 // now assign correct gainController to corresponding
                 // pannerNode
                 for (var i = 0; i < order.length; i++){
-                    log.debug("Reconnecting GainController " + i + " with Bed " + order[i]);
+                    console.debug("Reconnecting GainController " + i + " with Bed " + order[i]);
                     this.objects["Bed"+order[i]].setAudio(this._audiobed.gainController[i]);
                 }
             }.bind(this));
@@ -340,7 +339,7 @@ ObjectManager.prototype = {
         }
         this.setPanningType(this._panningType);
         $(document).triggerHandler('om_initialized');
-        log.debug('Scene sucessfully initialized!');
+        console.debug('Scene sucessfully initialized!');
         //this.start();
     },
 
@@ -356,11 +355,11 @@ ObjectManager.prototype = {
                 this._audiobed.play();
             }
             var that = this;
-            var evt = this._clock.setTimeout(function(){log.debug(that.ctx.currentTime);}, 1).repeat(1);
+            var evt = this._clock.setTimeout(function(){console.debug(that.ctx.currentTime);}, 1).repeat(1);
             this.playing = true;
             return true;
         } else {
-            log.info("Audio signals not yet ready for playing.");
+            console.info("Audio signals not yet ready for playing.");
             return false;
         }
     },
@@ -447,7 +446,7 @@ ObjectManager.prototype = {
             var evt = this._evts[key];
             var evt_time = parseFloat(key);
             var newTime = evt_time - time + this.ctx.currentTime;
-            //log.debug("Evt " + key + " rescheduled from " + evt.deadline + " to " + newTime);
+            //console.debug("Evt " + key + " rescheduled from " + evt.deadline + " to " + newTime);
             evt.schedule(newTime);
         }
 
@@ -466,7 +465,7 @@ ObjectManager.prototype = {
                 } else {
                     // should stop audio if audioNewPos > duration
                     this._singleObjAudios[kf][idx].setTime(audioNewPos);
-                    log.debug("Set audio " + idx + " to position " + audioNewPos);
+                    console.debug("Set audio " + idx + " to position " + audioNewPos);
                 }
             }
         }
@@ -481,7 +480,7 @@ ObjectManager.prototype = {
                 } else {
                     // should stop audio if audioNewPos > duration
                     this._groupObjPlayers[kf][group].setTime(audioNewPos);
-                    log.debug("Set group " + group + " to position " + audioNewPos);
+                    console.debug("Set group " + group + " to position " + audioNewPos);
                 }
             }
         }
@@ -566,7 +565,7 @@ ObjectManager.prototype = {
     },
 
     _handleKeyframe: function(key){
-        log.debug("Activating keyframe: " + key);
+        console.debug("Activating keyframe: " + key);
         var keyframe = this._keyframes[key];
         //this._kfMapping = {};
         if (this.interactive === false){
@@ -652,9 +651,9 @@ ObjectManager.prototype = {
 
         // now check if all assets are ready for playing:
         for (var el in this._kf_canplay[kf]){
-            log.debug(el);
+            console.debug(el);
             if (this._kf_canplay[kf][el] === false){
-                log.debug("Pausing playback as not all assets are decoded yet.. ");
+                console.debug("Pausing playback as not all assets are decoded yet.. ");
                 this.pause();
                 break;
             }
@@ -680,14 +679,14 @@ ObjectManager.prototype = {
 
     _loadedStateDelegate: function(kf, obj){
         return function(){
-            log.debug("Asset now ready: " + obj);
+            console.debug("Asset now ready: " + obj);
             this._kf_canplay[kf][obj] = true;
             this._checkLoadedState(kf);
         }.bind(this);
     },
 
     _checkLoadedState: function(kf){
-        log.debug(this._kf_canplay[kf]);
+        console.debug(this._kf_canplay[kf]);
         for (var obj in this._kf_canplay[kf]) {
             if (this._kf_canplay[kf][obj] !== true){
                 console.debug("We still need to wait for decoding of asset(s)");
@@ -707,7 +706,7 @@ ObjectManager.prototype = {
 
     _handleKeyframeMappings: function(){
         if (JSON.stringify(this._last_kfMapping) !== JSON.stringify(this._kfMapping)){
-            log.info("Track mapping has changed" + JSON.stringify(this._kfMapping));
+            console.info("Track mapping has changed" + JSON.stringify(this._kfMapping));
             // Firstly disconnect everything to make sure that no old
             // mappings stay connected
             // That means that changes have to be made explicitely and
@@ -729,12 +728,12 @@ ObjectManager.prototype = {
                 }
                 else if (typeof objs === "object"){   // == array
                     for (var i = 0; i < objs.length; i++){
-                        log.trace("Adding " + objs[i] + " to the pannerObject array");
+                        console.trace("Adding " + objs[i] + " to the pannerObject array");
                         pannerObjects.push(this.objects[objs[i]].highpass);
                     }
                 }
                 this._audioInstances[key].reconnect(pannerObjects);
-                log.debug("Reconnecting " + key + " with " + objs);
+                console.debug("Reconnecting " + key + " with " + objs);
 
                 /**
                  * Will be fired if track mapping for object from list changes
@@ -761,13 +760,13 @@ ObjectManager.prototype = {
         return function(){
             that._handleKeyframe(key);
             that._currentKeyframeIndex = parseFloat(key);
-            log.debug('Keyframe ' + key + ' reached at context time: ' + relTime);
+            console.debug('Keyframe ' + key + ' reached at context time: ' + relTime);
         };
     },
 
     /*
     update: function(){
-        log.trace("Updating scene..")
+        console.trace("Updating scene..")
         // neue metadaten lesen
         // aktuelle Zeit vom AudioContext holen
         // Objekt-Eigenschaften entsprechend ändern

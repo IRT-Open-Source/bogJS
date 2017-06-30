@@ -11,7 +11,6 @@
 
 window.$ = require('jquery');
 var _ = require('underscore');
-var log = require('loglevel');
 
 
 /**
@@ -94,7 +93,7 @@ ChannelOrderTest.prototype = {
             // the returned order should be identical for two conscutive calls
             // to make sure we have a reliable result
             if ((unique.length === this._tracks) && (_.isEqual(last_unique, unique))) {
-                log.info('Channel order detected: ' + order);
+                console.info('Channel order detected: ' + order);
 
                 /**
                  * If channel order was detected and ensured, the event is
@@ -109,7 +108,7 @@ ChannelOrderTest.prototype = {
                 last_unique = unique;
             }
 
-            log.debug("Channel order not yet detected. Iteration:  " + this._counter);
+            console.debug("Channel order not yet detected. Iteration:  " + this._counter);
             if (this._counter >= 5){
                 console.warn("Channel order not detectable. Stop trying and trigger default values.");
                 order = _.range(this._tracks);
@@ -152,10 +151,10 @@ ChannelOrderTest.prototype = {
             var idx = _.indexOf(this.freqBins[i], _.max(this.freqBins[i]));
             indices[i] = idx;
         }
-        log.debug("Decoded indices: " + indices);
+        console.debug("Decoded indices: " + indices);
         // to avoid the array is mutated and numerical sorted
         var sorted_indices = indices.concat().sort(function(a, b){return a-b;});
-        log.debug("Sorted indices: " + sorted_indices);
+        console.debug("Sorted indices: " + sorted_indices);
         var normalized_indices = [];
         for (var i = 0; i < indices.length; i++){
             normalized_indices[i] = _.indexOf(sorted_indices, indices[i]);

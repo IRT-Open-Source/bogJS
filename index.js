@@ -10,6 +10,4 @@ window.MediaElementController = require('./src/media_controller');
 window.ObjectController = require('./src/object');
 window.ObjectManager = require('./src/object_manager');
 window.SceneReader = require('./src/scene_reader');
-window.log = require('loglevel');
 //window.UIManager = require('./src/ui');
-

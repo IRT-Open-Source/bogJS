@@ -8,7 +8,6 @@
  * @module bogJS
  */
 
-//var log = require('loglevel');
 //var _ = require('underscore');
 window.$ = require('jquery');
 require('jquery-ui-browserify');
@@ -29,10 +28,8 @@ require('jquery.transit');
  * module:bogJS~ObjectManager} instance
  * @param {String} url - URL to scene file. If no ObjectManager instance is
  * passed, the URL must be passed.
- * @param {number} [loglevel=1] - logging level
  */
-var UIManager = function(om, url, loglevel=logl.levels.DEBUG){
-    log.setLevel(loglevel);
+var UIManager = function(om, url){
     this.om = om || new ObjectManager(url);
     this.bg = "";
     this.listener = "";
@@ -159,7 +156,7 @@ UIManager.prototype = {
                 }
             }.bind(this), false);
         } else {
-            log.info("Not supported on your device or browser.  Sorry.");
+            console.info("Not supported on your device or browser.  Sorry.");
         }
     },
 
@@ -202,7 +199,7 @@ UIManager.prototype = {
         } else{
              $("#" + obj).hide();
         }
-        log.debug("Setting state of object " + obj + ' to ' + bool);
+        console.debug("Setting state of object " + obj + ' to ' + bool);
     },
 
     _enableInteractive: function(){
@@ -238,17 +235,17 @@ UIManager.prototype = {
             $("#"+key).dblclick(function(event, ui){
                 if (that._soloed !== event.target.id){
                     for (var key in that.om.objects){
-                        log.debug("Muting " + key);
+                        console.debug("Muting " + key);
                         $("#"+key).addClass("irt_object_disabled");
                         that.om.objects[key].setStatus(false);
                     }
                     $("#"+event.target.id).removeClass("irt_object_disabled");
-                    log.debug("Unmuting " + event.target.id);
+                    console.debug("Unmuting " + event.target.id);
                     that.om.objects[event.target.id].setStatus(true);
                     that._soloed = event.target.id;
                 } else {
                     for (var obj in that.om.objects){
-                        log.debug("Unmuting " + obj);
+                        console.debug("Unmuting " + obj);
                         $("#"+obj).removeClass("irt_object_disabled");
                         that.om.objects[obj].setStatus(true);
                     }
@@ -272,7 +269,7 @@ UIManager.prototype = {
                         var topleft = [ui.position.top, ui.position.left];
                         var xy = that._topleft2xy(topleft);
                         that.om.objects[event.target.id].setPosition([xy[0], 0, -1 * xy[1]]);
-                        log.debug("Drag event position: " + topleft);
+                        console.debug("Drag event position: " + topleft);
                     },
                 50)
             });
@@ -296,7 +293,7 @@ UIManager.prototype = {
     _setListenerPosition: function(xy) {
         var topleft = this._xy2topleft(xy);
         $(this.listener).css({"top": topleft[0], "left": topleft[1]});
-        log.info("New listener position: " + topleft);
+        console.info("New listener position: " + topleft);
         var that = this;
         $(this.listener).draggable({
             drag: function(event, ui){
@@ -316,14 +313,14 @@ UIManager.prototype = {
         var y = 0;  // as we don't have a lattitude here y is always 0 :)
         var z = -10 * Math.cos(angle * (Math.PI / 180));
 
-        log.info("Set angle " + angle + " to new listener orientation " + x + " " + y + " " + z);
+        console.info("Set angle " + angle + " to new listener orientation " + x + " " + y + " " + z);
         this.om.setListenerOrientation(x, y, z);
     },
 
     _changeUIObjectPosition: function(id, xy) {
         var topleft = this._xy2topleft(xy);
         $("#"+id).css({"top": topleft[0], "left": topleft[1]});
-        log.debug("New position of " + id + " is: " + topleft + "(xy: " + xy + ")");
+        console.debug("New position of " + id + " is: " + topleft + "(xy: " + xy + ")");
     },
 
     _setObjPos: function(id, topleft){

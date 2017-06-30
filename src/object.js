@@ -8,7 +8,6 @@
  * @module bogJS
  */
 
-var log = require('loglevel');
 
 /**
  * Represents ObjectController class which has all the logic to control an
@@ -70,7 +69,7 @@ ObjectController.prototype = {
     setPosition: function(xyz){
         var my_xyz = [parseFloat(xyz[0]), parseFloat(xyz[1]), parseFloat(xyz[2])];
         this.panner.setPosition(xyz[0], xyz[1], xyz[2]);
-        log.debug("New Position: " + my_xyz);
+        console.debug("New Position: " + my_xyz);
         this.position = xyz;
     },
 
@@ -161,7 +160,7 @@ ObjectController.prototype = {
             this.panningType = this.panner.panningModel;
         }
         else {
-            log.error("Only >>HRTF<< or >>equalpower<< are valid types");
+            console.error("Only >>HRTF<< or >>equalpower<< are valid types");
         }
     },
 

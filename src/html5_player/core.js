@@ -39,7 +39,6 @@
  *
  */
 
-var log = require('loglevel');
 window.$ = require('jquery');
 
 
@@ -119,7 +118,7 @@ AudioData.prototype = {
      * @protected
      */
     _onendedHandler: function(){
-        //log.debug("Audio buffer has ended!");
+        //console.debug("Audio buffer has ended!");
         this._playing = false;
         //this._startOffset = 0;
 
@@ -144,12 +143,12 @@ AudioData.prototype = {
         if ((this._playing == false) && (this.canplay)){
             this._initBuffer();
             this._startTime = this.audio.context.currentTime;
-            log.debug("Start time: " + this._startTime);
+            console.debug("Start time: " + this._startTime);
             if (typeof pos != 'number'){        // detection with _.isNumber() could be more robust
                 var buffer_duration = this._buffer.duration;
                 var offset = (this._rangeStart + this._startOffset) % buffer_duration;
                 var duration = this._rangeEnd - offset;
-                log.debug("Offset: " + offset + "   Duration: " + duration);
+                console.debug("Offset: " + offset + "   Duration: " + duration);
 
                 // Passing a duration to start() causes undefined
                 // situation in current versions of Chrome. FF, Safari
@@ -158,7 +157,7 @@ AudioData.prototype = {
                 this.audio.start(0, offset, duration);
                 //this.audio.start(0, offset);
             } else {
-                log.debug("Starting playback at " + pos);
+                console.debug("Starting playback at " + pos);
                 this._startOffset = pos;
                 var duration = this._rangeEnd - pos;
                 this.audio.start(0, pos, duration);
@@ -183,7 +182,7 @@ AudioData.prototype = {
             // Measure how much time passed since the last pause.
             this._startOffset += this.audio.context.currentTime - this._startTime;
             this._playing = false;
-            log.debug("Start offset: "+ this._startOffset);
+            console.debug("Start offset: "+ this._startOffset);
         }
     },
 
@@ -198,7 +197,7 @@ AudioData.prototype = {
             this._startOffset = 0;
             this._playing = false;
         } catch (err) {
-            log.warn("Can't stop audio.. " + err);
+            console.warn("Can't stop audio.. " + err);
         }
     },
 
@@ -213,7 +212,7 @@ AudioData.prototype = {
             this.gain = this.gainNode.gain.value;  // avoids that we accept uncompatible values
         }
         else {
-            log.warn("Gain values must be between 0 and 1");
+            console.warn("Gain values must be between 0 and 1");
         }
     },
 
@@ -240,7 +239,7 @@ AudioData.prototype = {
             this.audio.loop = this._looping;
             //this.play();
         } catch (err) {
-            log.warn("Can't set loop state: " + err);
+            console.warn("Can't set loop state: " + err);
         }
     },
 
@@ -254,7 +253,7 @@ AudioData.prototype = {
             this.audio.loop = this._looping;
             //this.play();
         } catch (err) {
-            log.warn("Can't set loop state: " + err);
+            console.warn("Can't set loop state: " + err);
         }
     },
 
@@ -274,9 +273,9 @@ AudioData.prototype = {
         this._rangeStart = pos;
         try {
             this.audio.loopStart = this._rangeStart;
-            log.debug("Loop start: " + pos);
+            console.debug("Loop start: " + pos);
         } catch (err) {
-            log.warn("Can't set loop start yet.." + err);
+            console.warn("Can't set loop start yet.." + err);
         }
     },
 
@@ -296,9 +295,9 @@ AudioData.prototype = {
         this._rangeEnd = pos;
         try {
             this.audio.loopEnd = this._rangeEnd;
-            log.debug("Loop end: " + pos);
+            console.debug("Loop end: " + pos);
         } catch (err){
-            log.warn("Can't set loop start yet.." + err);
+            console.warn("Can't set loop start yet.." + err);
         }
     },
 
@@ -410,7 +409,7 @@ AudioData.prototype = {
             if (supports.indexOf(ext[0]) > -1){
                 var src = url;
             } else {
-                log.error("ERROR: Your browser does not support the needed audio codec (" + ext[0] + ")!");
+                console.error("ERROR: Your browser does not support the needed audio codec (" + ext[0] + ")!");
                 var src = "";
             }
         }
@@ -445,7 +444,7 @@ AudioData.prototype = {
         if (document.createElement('audio').canPlayType('audio/mp4; codecs="mp4a.40.5"') != ""){
             supports.push(".m4a");
         }
-        log.debug("Your browser seems to support these containers: " + supports);
+        console.debug("Your browser seems to support these containers: " + supports);
         return supports;
     },
 
@@ -468,7 +467,7 @@ AudioData.prototype = {
                 that.canplay = true;
                 that._rangeEnd = that._buffer.duration;
                 that.duration = that._buffer.duration;
-                log.debug("audio loaded & decoded!");
+                console.debug("audio loaded & decoded!");
 
                 /**
                  * Will be fired if the audio data has been loaded &
@@ -569,7 +568,7 @@ IRTPlayer.prototype = {
             */
         }
         else {
-            log.warn('No urls for sounds passed');
+            console.warn('No urls for sounds passed');
         }
     },
 
@@ -608,7 +607,7 @@ IRTPlayer.prototype = {
         $(audioData).on("audio_loaded", function(){
             this._loaded_counter += 1;
             if (this._loaded_counter == this.signals.length){
-                log.debug("All buffers are loaded & decoded");
+                console.debug("All buffers are loaded & decoded");
                 /**
                  * Will be fired to the DOM once all audio signals are loaded.
                  * This event is triggered to the DOM and not to the object instance
@@ -627,7 +626,7 @@ IRTPlayer.prototype = {
             this._ended_counter += 1;
             if (this._ended_counter == this.signals.length){
                 this.playing = false;
-                log.debug("All buffers ended");
+                console.debug("All buffers ended");
                 /**
                  * Will be fired to the DOM once all audio signals are loaded.
                  * This event is triggered to the DOM and not to the object instance
@@ -694,7 +693,7 @@ IRTPlayer.prototype = {
             this.activeSignal = id;
         }
         else{
-            log.error("Passed array index invalid!")
+            console.error("Passed array index invalid!")
         }
     },
 
@@ -723,7 +722,7 @@ IRTPlayer.prototype = {
             this.activeSignal = id;
         }
         else{
-            log.error("Passed array index invalid!")
+            console.error("Passed array index invalid!")
         }
     },
 
@@ -747,7 +746,7 @@ IRTPlayer.prototype = {
      * position for all audio sources in {@link IRTPlayer#signals}
      */
     setRangeStart: function(pos){
-        log.info("Range start: " + pos);
+        console.info("Range start: " + pos);
         this._do('setRangeStart', pos);
     },
 
@@ -758,7 +757,7 @@ IRTPlayer.prototype = {
      * position for all audio sources in {@link IRTPlayer#signals}
      */
     setRangeEnd: function(pos){
-        log.info("Range end: " + pos);
+        console.info("Range end: " + pos);
         this._do('setRangeEnd', pos);
     },
 
