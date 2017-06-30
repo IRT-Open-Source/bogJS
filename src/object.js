@@ -49,6 +49,7 @@ var ObjectController = function(ctx, sourceNode, targetNode=ctx.destination) {
     this.gain = 1;  // valid values between 0 and 1  // FIXME: make private and use set and get methods
 
     this._state = false;
+    this.stateNode = new GainController(ctx, this.panner);
 
     this.setAudio(sourceNode);
     this.panner.connect(targetNode);
@@ -90,13 +91,14 @@ ObjectController.prototype = {
      */
     setStatus: function(state){
         if ((state === true) || (state == 1)){
-            this.audio.unmute();
+            this.stateNode.unmute();
             this._state = true;
         }
         else if ((state === false) || (state == 0)){
-            this.audio.mute();
+            this.stateNode.mute();
             this._state = false;
         }
+        console.info("Setting state to " + this._state);
     },
 
     /**
@@ -240,10 +242,10 @@ ObjectController.prototype = {
             // FIXME: AudioData() class should also have a connect method.
             // Better would be to use derived class mechanisms.
             if(this.audio.connect) {
-                this.audio.connect(this.highpass);
+                this.audio.connect(this.stateNode.gainNode);
             }
             else {
-                this.audio.reconnect(this.highpass);
+                this.audio.reconnect(this.stateNode.gainNode);
             }
         }
     },

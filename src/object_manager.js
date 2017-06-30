@@ -340,6 +340,11 @@ ObjectManager.prototype = {
         this.setPanningType(this._panningType);
         $(document).triggerHandler('om_initialized');
         console.debug('Scene sucessfully initialized!');
+        if (this.interactiveInfo.switchGroups){
+            for (var g of Object.keys(this.interactiveInfo.switchGroups)){
+                this._initSwitchGroup(g);
+            }
+        }
         //this.start();
     },
 
@@ -836,6 +841,21 @@ ObjectManager.prototype = {
         for (var key in this.objects){
             this.objects[key].setHighpassFreq(freq);
         }
+    },
+
+    _initSwitchGroup: function(groupName){
+        var item = this.interactiveInfo.switchGroups[groupName].default;
+        this.switchGroup(groupName, item);
+    },
+
+    switchGroup: function(groupName, item){
+        var objects = Object.values(this.interactiveInfo.switchGroups[groupName].items);
+        for (var obj of objects){
+            this.objects[obj].setStatus(false);
+        }
+        var active_obj = this.interactiveInfo.switchGroups[groupName].items[item];
+        console.info("SwitchGroup " + groupName + " enable " + active_obj);
+        this.objects[active_obj].setStatus(true);
     },
 
     /**

@@ -136,7 +136,7 @@ SceneReader.prototype = {
         var audioURLs = {};
         var sceneInfo = {};
         var interactiveInfo = {};
-        interactiveInfo.switchGroup = {};
+        interactiveInfo.switchGroups = {};
         interactiveInfo.gain = {};
         var groups = {};
         var extraObjects = {};
@@ -164,12 +164,12 @@ SceneReader.prototype = {
                         if (meta.cmd[3] === "switchGroup") {
                             if (meta.cmd[4] === "label") {
                                 var label = meta.params[0];
-                                interactiveInfo.switchGroup[label] = {};
-                                interactiveInfo.switchGroup[label].default = meta.params[1];
-                                interactiveInfo.switchGroup[label].items = {};
+                                interactiveInfo.switchGroups[label] = {};
+                                interactiveInfo.switchGroups[label].default = meta.params[1];
+                                interactiveInfo.switchGroups[label].items = {};
                             } else {
                                 var item_label = meta.params[0];
-                                interactiveInfo.switchGroup[label].items[item_label] = meta.params[1];
+                                interactiveInfo.switchGroups[label].items[item_label] = meta.params[1];
                             }
                         } else if (meta.cmd[3] === "gain"){
                             interactiveInfo.gain[meta.cmd[4]] = meta.params;
