@@ -163,12 +163,13 @@ SceneReader.prototype = {
                     } else if (meta.cmd[2] === "interactive") {
                         if (meta.cmd[3] === "switchGroup") {
                             if (meta.cmd[4] === "label") {
-                                interactiveInfo.switchGroup[meta.params] = {};
-                                //interactiveInfo.switchGroup.items = {};
-                                var label = meta.params;
+                                var label = meta.params[0];
+                                interactiveInfo.switchGroup[label] = {};
+                                interactiveInfo.switchGroup[label].default = meta.params[1];
+                                interactiveInfo.switchGroup[label].items = {};
                             } else {
                                 var item_label = meta.params[0];
-                                interactiveInfo.switchGroup[label][item_label] = meta.params[1];
+                                interactiveInfo.switchGroup[label].items[item_label] = meta.params[1];
                             }
                         } else if (meta.cmd[3] === "gain"){
                             interactiveInfo.gain[meta.cmd[4]] = meta.params;
