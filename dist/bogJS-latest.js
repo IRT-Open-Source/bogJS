@@ -1,8 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "5fdba55 v0.3.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Nov 14 2016 17:36:55 GMT+0100 (CET)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "10bb0cb v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Fri Jun 30 2017 22:16:39 GMT+0200 (CEST)";
 
 
 // making the objects globally available
@@ -12,16 +12,16 @@ window.jquery = $;
 window.ChannelOrderTest = require('./src/channelorder_test');
 window.AudioData = require('./src/html5_player/core').AudioData;
 window.IRTPlayer = require('./src/html5_player/core').IRTPlayer;
+window.GainController = require('./src/gain_controller');
 window.MediaElementController = require('./src/media_controller');
 window.ObjectController = require('./src/object');
 window.ObjectManager = require('./src/object_manager');
 window.SceneReader = require('./src/scene_reader');
-window.log = require('loglevel');
 //window.UIManager = require('./src/ui');
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./src/channelorder_test":8,"./src/html5_player/core":9,"./src/media_controller":10,"./src/object":11,"./src/object_manager":12,"./src/scene_reader":13,"jquery":2,"loglevel":3}],2:[function(require,module,exports){
+},{"./src/channelorder_test":8,"./src/gain_controller":9,"./src/html5_player/core":10,"./src/media_controller":11,"./src/object":12,"./src/object_manager":13,"./src/scene_reader":14,"jquery":2}],2:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.2.4
  * http://jquery.com/
@@ -12039,6 +12039,7 @@ WAAClock.prototype._relTime = function(absTime) {
 }).call(this,require('_process'))
 
 },{"_process":4}],8:[function(require,module,exports){
+/*jshint esversion: 6 */
 /**
  * @file channelorder_test.js
  * @author Michael Weitnauer: {@link weitnauer@irt.de}
@@ -12051,7 +12052,6 @@ WAAClock.prototype._relTime = function(absTime) {
 
 window.$ = require('jquery');
 var _ = require('underscore');
-var log = require('loglevel');
 
 
 /**
@@ -12078,7 +12078,7 @@ var log = require('loglevel');
  * @param {String} [root="signals/order"] - path to test encoded files
  * @fires module:bogJS~ChannelOrderTest#order_ready
  */
-var ChannelOrderTest = function(container, tracks, ctx, root){
+var ChannelOrderTest = function(container, tracks, ctx, root="signals/order/"){
     if (typeof ctx === 'undefined') {
         if (typeof AudioContext !== 'undefined') {
             var ctx = new AudioContext();
@@ -12102,13 +12102,12 @@ var ChannelOrderTest = function(container, tracks, ctx, root){
         //this.analysers[i].connect(this.ctx.destination);
     }
     //var root = root || "http://lab.irt.de/demos/order/";
-    var root = root || "signals/order/";
     if (container === "webm"){   // we assume opus if webm is used
         container = "opus";
     }
     var url = root+tracks+"chs."+container;
     this._loadSound(url);
-}
+};
 
 
 ChannelOrderTest.prototype = {
@@ -12125,15 +12124,6 @@ ChannelOrderTest.prototype = {
         this.audio.load();
         this.mediaElement = this.ctx.createMediaElementSource(this.audio);
         this.mediaElement.connect(this._splitter);
-        /*
-        if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-            var dialog = confirm("Detect Channel Order?");
-            if (dialog){
-                this.audio.play();
-            }
-        } else {
-            this.audio.play();
-        }*/
         this.audio.play();
         var last_unique = [];
         this._counter = 0;
@@ -12144,7 +12134,7 @@ ChannelOrderTest.prototype = {
             // the returned order should be identical for two conscutive calls
             // to make sure we have a reliable result
             if ((unique.length === this._tracks) && (_.isEqual(last_unique, unique))) {
-                log.info('Channel order detected: ' + order);
+                console.info('Channel order detected: ' + order);
 
                 /**
                  * If channel order was detected and ensured, the event is
@@ -12159,10 +12149,10 @@ ChannelOrderTest.prototype = {
                 last_unique = unique;
             }
 
-            log.debug("Channel order not yet detected. Iteration:  " + this._counter);
+            console.debug("Channel order not yet detected. Iteration:  " + this._counter);
             if (this._counter >= 5){
                 console.warn("Channel order not detectable. Stop trying and trigger default values.");
-                var order = _.range(this._tracks);
+                order = _.range(this._tracks);
                 $(this).triggerHandler('order_ready', [order]);
                 this.audio.pause();
             }
@@ -12202,10 +12192,10 @@ ChannelOrderTest.prototype = {
             var idx = _.indexOf(this.freqBins[i], _.max(this.freqBins[i]));
             indices[i] = idx;
         }
-        log.debug("Decoded indices: " + indices);
+        console.debug("Decoded indices: " + indices);
         // to avoid the array is mutated and numerical sorted
         var sorted_indices = indices.concat().sort(function(a, b){return a-b;});
-        log.debug("Sorted indices: " + sorted_indices);
+        console.debug("Sorted indices: " + sorted_indices);
         var normalized_indices = [];
         for (var i = 0; i < indices.length; i++){
             normalized_indices[i] = _.indexOf(sorted_indices, indices[i]);
@@ -12216,814 +12206,8 @@ ChannelOrderTest.prototype = {
 
 module.exports = ChannelOrderTest;
 
-},{"jquery":2,"loglevel":3,"underscore":5}],9:[function(require,module,exports){
-/**
- * @file irtPlayer_new.js
- * @author Michael Weitnauer: {@link weitnauer@irt.de} 
- */
-
-/**
- * @license
- * ----------------------------------------------------------------------------
- * irtPlayer, a Javascript HTML5 Audio library for comparing audio files gaplessly
- * v2.0.0
- * Licensed under the MIT license.
- * http://www.irt.de
- * ----------------------------------------------------------------------------
- * Copyright (C) 2015 Institut für Rundfunktechnik GmbH
- * http://www.irt.de
- * ----------------------------------------------------------------------------
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files ( the "Software" ), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * ----------------------------------------------------------------------------
- */
-
-/**
- * @module irtPlayer 
- *
- */
-
-var log = require('loglevel');
-window.$ = require('jquery');
-
-
-/**
- * Represents AudioData class which has all the logic to control an
- * audio signal
- *
- * @constructor
- *
- * @param {Object} ctx - An AudioContext instance.
- * @param {string} url - URL of the audio source (with or without
- * extension).
- * @param {Object} [targetNode=ctx.destination] - The audio node to which the AudioData
- * instance shall be connected
- * @param {boolean} [checkSupportFlag=true] - Enable / disable extension
- * support for passed url (see [AudioData._checkExtension]{@link AudioData#_checkExtension})
- *
- * @fires module:irtPlayer~AudioData#audio_init
- * @fires module:irtPlayer~AudioData#audio_loaded
- * @fires module:irtPlayer~AudioData#audio_ended
- */
-var AudioData = function(ctx, url, targetNode, checkSupportFlag) {
-    /** @protected
-     * @var {boolean} */
-    this.canplay = false;
-    var checkSupportFlag = checkSupportFlag || true;
-    if (checkSupportFlag == true){
-        var url = this._checkExtension(url);
-    }
-    /** @var {Object.<AudioContext>} */
-    this.ctx = ctx;
-    this.url = url;
-    
-    this._playing = false;
-    this._looping = true;
-    this._rangeStart = 0;
-    this._rangeEnd = 0;
-    this._startTime = 0;
-    this._startOffset = 0;
-    
-    /** @var {Object.<GainNode>} */
-    this.gainNode = this.ctx.createGain(); 
-    this.gain = this.getGain();
-    var targetNode = targetNode || this.ctx.destination;
-    this.gainNode.connect(targetNode);  // FF either refuses to break this connection or simply displays a no more existing connection..
-}
-
-AudioData.prototype = {
-    
-    /**
-     * Create instance of new AudioBufferSource every time {@link
-     * AudioData#play} is called and initialize it.
-     *
-     * @protected
-     */
-    _initBuffer: function(){
-        this.audio = this.ctx.createBufferSource();
-        this.audio.loop = this._looping;
-        //this.audio.loop = false;  // workaround to compensate Chrome behavior. see comment in play()
-        this.audio.buffer = this._buffer;
-        this.audio.connect(this.gainNode);
-        this.audio.loopStart = this._rangeStart;
-        this.audio.loopEnd = this._rangeEnd;
-        this.audio.onended = this._onendedHandler.bind(this);
-        
-        /** 
-         * Will be fired once the new AudioBufferSource has been
-         * initilized.
-         * @event module:irtPlayer~AudioData#audio_init
-         */
-        $(this).triggerHandler("audio_init");
-    },
-    
-    /**
-     * Will be called if AudioBufferSource instance has ended
-     *
-     * @protected
-     */
-    _onendedHandler: function(){
-        //log.debug("Audio buffer has ended!");
-        this._playing = false;
-        //this._startOffset = 0;
-        
-        /**
-         * Will be fired once the playback has ended
-         * @event module:irtPlayer~AudioData#audio_ended
-         */
-        $(this).triggerHandler("audio_ended");
-    },
-
-    load: function(){
-        this._loadSound(this.url);    
-    },
-    
-    /**
-    * Start playback of audio signal
-    *
-    * @param {number} [pos] - Position from which the playback shall start
-    * (optional)
-    */
-    play: function(pos){
-        if ((this._playing == false) && (this.canplay)){
-            this._initBuffer();
-            this._startTime = this.audio.context.currentTime;
-            log.debug("Start time: " + this._startTime);
-            if (typeof pos != 'number'){        // detection with _.isNumber() could be more robust
-                var buffer_duration = this._buffer.duration;
-                var offset = (this._rangeStart + this._startOffset) % buffer_duration;
-                var duration = this._rangeEnd - offset;
-                log.debug("Offset: " + offset + "   Duration: " + duration);
-                
-                // Passing a duration to start() causes undefined
-                // situation in current versions of Chrome. FF, Safari
-                // and Opera seem to treat this situation properly. See
-                // also https://github.com/WebAudio/web-audio-api/issues/421
-                this.audio.start(0, offset, duration); 
-                //this.audio.start(0, offset); 
-            } else {
-                log.debug("Starting playback at " + pos);
-                this._startOffset = pos;
-                var duration = this._rangeEnd - pos;
-                this.audio.start(0, pos, duration);
-            }
-            // workaround to force looping in Chrome. see comment above.
-            // Chrome seems to ignore looping state if duration is
-            // passed. --> init() with loop = false, then set "real"
-            // loop state here:
-            //this.audio.loop = this._looping;
-            this._playing = true;
-        }
-    },
-
-    /**
-     * Pause playback  - will only be executed if {@link
-     * AudioData#_playing} flag is true.
-     *
-     */
-    pause: function(){
-        if (this._playing == true){
-            this.audio.stop(0);
-            // Measure how much time passed since the last pause.
-            this._startOffset += this.audio.context.currentTime - this._startTime;
-            this._playing = false; 
-            log.debug("Start offset: "+ this._startOffset);
-        }
-    },
-
-    
-    /**
-     * Stops playback - if method is called during the playback 
-     * is stopped, the thrown error will be catched.
-     */
-    stop: function(){
-        try {
-            this.audio.stop(0);
-            this._startOffset = 0;
-            this._playing = false;
-        } catch (err) {
-            log.warn("Can't stop audio.. " + err);
-        }
-    },
-
-    /**
-     * Sets gain of {@link AudioData} instance
-     *
-     * @param {float} gain - Value between 0.0 and 1.0
-     */
-    setGain: function(gain){
-        if ((gain >= 0.0) && (gain <= 1.0)){
-            this.gainNode.gain.value = gain;
-            this.gain = this.gainNode.gain.value;  // avoids that we accept uncompatible values
-        }
-        else {
-            log.warn("Gain values must be between 0 and 1");
-        }
-    },
-    
-    /**
-     * Returns current gain value of {@link AudioData} instance
-     *
-     * @return {float} value - Float gain value
-     */
-    getGain: function(){
-        return this.gainNode.gain.value;  // or do we trust in this.gain ??
-    },
-
-    /**
-     * Disables / enables the loop of the {@link AudioData} instance
-     */
-    toggleLoop: function() {
-        if (this._looping == false){
-            this._looping = true;
-        } else {
-            this._looping = false;
-        }
-        try {
-            //this.pause();
-            this.audio.loop = this._looping;
-            //this.play();
-        } catch (err) {
-            log.warn("Can't set loop state: " + err);
-        }
-    },
-
-    /**
-     * Disables / enables the loop of the {@link AudioData} instance
-     */
-    setLoopState: function(bool) {
-        this._looping = bool;
-        try {
-            //this.pause();
-            this.audio.loop = this._looping;
-            //this.play();
-        } catch (err) {
-            log.warn("Can't set loop state: " + err);
-        }
-    },
-    
-    /**
-     * Sets start position for playback 
-     *
-     * @param {float} pos  - Start playback always at passed
-     * position
-     */
-    setRangeStart: function(pos){
-        pos = parseFloat(pos);
-        if (pos >= 0) {
-            pos = pos;
-        } else {
-            pos = 0;
-        }
-        this._rangeStart = pos;
-        try {
-            this.audio.loopStart = this._rangeStart;
-            log.debug("Loop start: " + pos);
-        } catch (err) {
-            log.warn("Can't set loop start yet.." + err);
-        }
-    },
-    
-    /**
-     * Sets end position for playback 
-     *
-     * @param {float} pos  - Playback end always at passed
-     * position
-     */
-    setRangeEnd: function(pos){
-        pos = parseFloat(pos);
-        if (pos <= this._buffer.duration) {
-            pos = pos;
-        } else {
-            pos = this._buffer.duration;
-        }
-        this._rangeEnd = pos;
-        try {
-            this.audio.loopEnd = this._rangeEnd;
-            log.debug("Loop end: " + pos);
-        } catch (err){
-            log.warn("Can't set loop start yet.." + err);
-        }
-    },
-
-    /**
-     * Mutes {@link AudioData} instance
-     */
-    mute: function(){
-        this.setGain(0.0);
-    },
-    
-    /**
-     * Unmutes {@link AudioData} instance
-     */
-    unmute: function(){
-        this.setGain(1.0);
-    }, 
-    
-    /**
-     * Jump to passed position during playback 
-     *
-     * @param {float} pos  - Must be between 0 and {@link
-     * AudioData._rangeEnd}
-     */
-    setTime: function(pos){
-        if ((pos >= 0) && (pos <= this._rangeEnd)){
-            this.stop();
-            this.play(pos);
-        }
-    },
-
-    /**
-     * Returns current playback position
-     *
-     * @return {number} value - Current playback position
-     */
-    getTime: function(){
-        if (this._playing) {
-            return this.audio.context.currentTime - this._startTime + this._startOffset;
-        } else {
-            return this._startOffset;
-        }
-    },
-    
-    /**
-    * Disconnects and reconnects {@link AudioData} instance to passed
-    * AudioNode(s)
-    *
-    * @param {...Object} nodes - Variable number of AudioNodes to which
-    * the {@link AudioData} instance shall be reconnected.
-    */
-    reconnect: function(nodes){
-        this.disconnect();
-        if (Object.prototype.toString.call(nodes) != "[object Array]"){          // == single Node
-            this.gainNode.connect(nodes);
-        } 
-        else {                                          // == array of Nodes
-            for (var i=0; i < nodes.length; i++){
-                this.gainNode.connect(nodes[i]);
-            }
-        }
-    },
-    
-    /**
-    * This method will disconnect the {@link AudioData} instance from
-    * all connected nodes (afterwards). Should be mostly
-    * ctx.destination.
-    */
-    disconnect: function(){
-        this.gainNode.disconnect();
-    },
-    
-    /** 
-     * Method will check whether the passed URL has an extension.
-     * Additionaly, {@link AudioData#_checkSupport} will be executed to 
-     * identify the possible containers / codecs.  
-     *
-     * @protected
-     * @param {string} url - URL
-     *
-     * @return {string} src - URL including file type extension which should be
-     * compatible with browser
-     */
-    _checkExtension: function(url){
-        var supports = this._checkSupport();
-
-        var re = /\.[0-9a-z]{3,4}$/i;   // strips the file extension (must be 3 or 4 characters)
-        var ext = re.exec(url);
-        if (ext == null){
-            if (supports.indexOf(".mp4") > -1) {
-                var src = url + ".mp4";
-            }
-            else if (supports.indexOf(".opus") > -1) {
-                var src = url + ".opus";
-            }
-            /*
-            else if (supports.indexOf(".m4a") > -1) {
-                var src = url + ".m4a";
-            }*/
-            else if (supports.indexOf(".ogg") > -1) {
-                var src = url + ".ogg";
-            }
-            else if (supports.indexOf(".mp3") > -1) {
-                var src = url + ".mp3";
-            }
-            else if (supports.indexOf(".wav") > -1) {
-                var src = url + ".wav";
-            }
-        } else {
-            if (supports.indexOf(ext[0]) > -1){
-                var src = url;
-            } else {
-                log.error("ERROR: Your browser does not support the needed audio codec (" + ext[0] + ")!");
-                var src = "";
-            }
-        }
-        return src
-    },
-    
-    /** 
-     * Detects whether the browser can play one of the listed containers
-     * / codecs
-     *
-     * @protected
-     * @return {string[]} support - An array containing all compatible
-     * formats
-     */
-    _checkSupport: function (){
-        var supports = [];
-        if (document.createElement('audio').canPlayType("audio/ogg codecs=opus") != ""){
-            supports.push(".opus");
-        }
-        if (document.createElement('audio').canPlayType("audio/ogg") != ""){
-            supports.push(".ogg");
-        }
-        if (document.createElement('audio').canPlayType("audio/x-wav") != ""){
-            supports.push(".wav");
-        }
-        if (document.createElement('audio').canPlayType("audio/mpeg") != ""){
-            supports.push(".mp3");
-        }
-        if (document.createElement('audio').canPlayType('audio/mp4') != ""){
-            supports.push(".mp4");
-        }
-        if (document.createElement('audio').canPlayType('audio/mp4; codecs="mp4a.40.5"') != ""){
-            supports.push(".m4a");
-        }
-        log.debug("Your browser seems to support these containers: " + supports);
-        return supports;
-    },
-    
-    /** 
-     * Load passed audio signal
-     *
-     * @protected
-     * @param {string} url - URL
-     */
-    _loadSound: function(url) {
-        var request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.responseType = 'arraybuffer';
-
-        // Decode asynchronously
-        var that = this;
-        request.onload = function() {
-            that.ctx.decodeAudioData(request.response, function(buffer) {
-                that._buffer = buffer;
-                that.canplay = true;
-                that._rangeEnd = that._buffer.duration;
-                that.duration = that._buffer.duration;
-                log.debug("audio loaded & decoded!");
-
-                /**
-                 * Will be fired if the audio data has been loaded &
-                 * decoded
-                 * @event module:irtPlayer~AudioData#audio_loaded
-                 */
-                $(that).triggerHandler("audio_loaded");
-            });
-        };
-        request.send();
-    }
-}
-
-
-/**
- * Represents Controller class which has all the logic to control an
- * array of {@link AudioData} instances
- *
- * @constructor
- *
- * @param {Object} [ctx] - An AudioContext instance.
- * @param {string[]} [sounds] - Array with list of URLs of the audio sources (with or without
- * extension).
- * @param {boolean} [checkSupportFlag=true] - Enable / disable extension
- * support for passed url (see [AudioData._checkExtension]{@link AudioData#_checkExtension})
- *
- * @fires module:irtPlayer~IRTPlayer#player_ready
- * @fires module:irtPlayer~IRTPlayer#player_ended
- */
-var IRTPlayer = function(ctx, sounds, checkSupportFlag){
-    if (typeof ctx === 'undefined') {
-        if (typeof AudioContext !== 'undefined') {
-            var ctx = new AudioContext();
-        } else if (typeof webkitAudioContext !== 'undefined') {
-            var ctx = new webkitAudioContext();
-        } else {
-            alert("Your browser doesn't support the Web Audio API!");
-        }
-    }
-
-    var checkSupportFlag = typeof checkSupportFlag !== 'undefined' ? checkSupportFlag : true;
-    this._checkSupport = checkSupportFlag;
-    this.ctx = ctx;
-    
-    /**
-     * @description Flag if audio signals will be looped
-     * @var {boolean} */
-    this.loopingState = true;
-
-    /** 
-     * @description Array of {@link AudioData} instances 
-     * @var {AudioData[]} */
-    this.signals = [];
-    
-    /** @var {boolean} */
-    this.playing = false;
-    this.canplay = false;
-    this.init(sounds);
-    
-    /**
-     * @description Global volume for all {@link AudioData} instances
-     * @var {float} */
-    this.vol = 1.0;
-
-    /** 
-     * @description Has array entry integer of currently active file. 
-     * See {@link IRTPlayer#muteOthers} or  {@link IRTPlayer#attenuateOthers}
-     * @var {integer}
-     */
-    this.activeSignal = null;
-    //this.muteOthers(0);
-    this._loaded_counter = 0;
-    this._ended_counter = 0;
-    }
-    
-IRTPlayer.prototype = {
-    
-    /**
-     * Adds all audio signals of passed array to the player
-     *
-     * @param {string[]} sounds - Array of URLs 
-     */
-    init: function(sounds){
-        if (typeof sounds != "undefined"){
-            for (var i=0; i < sounds.length; i++) {
-                //this.signals[i] = new AudioData(this.ctx, sounds[i]); // can be also used to reset tracks array
-                this.addURL(sounds[i]);
-            }
-
-            // we must bind the event listeners here, because within
-            // addURL() it would fulfilled every time the event would
-            // be triggered, since the signals[] array does not yet
-            // contain all signals during addURL() calls here..
-            /*
-            for (var i=0; i < this.signals.length; i++){
-                this._addEventListener(this.signals[i]);
-            }
-            */
-        }
-        else {
-            log.warn('No urls for sounds passed');
-        }
-    },
-
-    /**
-     * Will add audio sources manually to the {@link IRTPlayer} instance
-     *
-     * @param {string} url - URL of to be added audio source
-     */
-    addURL: function(url){
-        var audio = new AudioData(this.ctx, url, this.ctx.destination, this._checkSupport);
-        this.addAudioData(audio);
-        
-        // The event listener must be registered before the event trigger can be
-        // created! So we call the load() method explicitely afterwards.
-        audio.load();
-    },
-    
-    /**
-     * Will add {@link AudioData} instances to the {@link IRTPlayer} instance
-     *
-     * @param {AudioData} audioData - instance of to be added audio data object
-     */
-    addAudioData: function(audioData){
-        this._addEventListener(audioData);
-        audioData.setLoopState(false);
-        this.signals.push(audioData);
-    },
-
-    _addEventListener: function(audioData){
-        // NOTE: This is likely working only due to the delayed loading of 
-        // the audio files. As we all know, the event listener must be already registered
-        // before the event trigger can be registered as well. So in the worst case, 
-        // the audio files will be loaded and decoded _before_ the listener is 
-        // registered which means that NO event will be triggered and received..!
-        // TODO: find a good workaround for this issue!
-        $(audioData).on("audio_loaded", function(){
-            this._loaded_counter += 1;
-            if (this._loaded_counter == this.signals.length){
-                log.debug("All buffers are loaded & decoded");
-                /** 
-                 * Will be fired to the DOM once all audio signals are loaded.
-                 * This event is triggered to the DOM and not to the object instance
-                 * as this would mean that the listener would have to be registered on
-                 * the not yet exisiting object instance... ==> logic proplem.
-                 * TODO: find alternative solution with promises, callback, etc
-                 * @event module:irtPlayer~IRTPlayer#player_ready
-                 */
-                $(this).triggerHandler("player_ready");
-                this.canplay = true;
-                this.duration = this.signals[0].duration;
-            }
-        }.bind(this));
-
-        $(audioData).on("audio_ended", function(){
-            this._ended_counter += 1;
-            if (this._ended_counter == this.signals.length){
-                this.playing = false;
-                log.debug("All buffers ended");
-                /** 
-                 * Will be fired to the DOM once all audio signals are loaded.
-                 * This event is triggered to the DOM and not to the object instance
-                 * as this would mean that the listener would have to be registered on
-                 * the not yet exisiting object instance... ==> logic proplem.
-                 * TODO: find alternative solution with promises, callback, etc
-                 * @event module:irtPlayer~IRTPlayer#player_ended
-                 */
-                $(this).triggerHandler("player_ended");
-            }
-        }.bind(this));
-    },
-
-    /**
-     * Toggles play / pause of playback
-     */
-    togglePlay: function(){
-        if (this.playing == false){
-            this.play();
-        }
-        else {
-            this.pause();    
-        }
-    },
-    
-    /**
-     * Starts playback of all audio sources in {@link IRTPlayer#signals}
-     */
-    play: function(){
-        this._do('play');
-        this.playing = true;
-        this._do('setLoopState', this.loopingState);
-        this._ended_counter = 0;
-    },
-    
-    /**
-     * Pauses playback of all audio sources in {@link IRTPlayer#signals}
-     */
-    pause: function(){
-        this._do('pause');
-        this.playing = false;
-    },
-    
-    /**
-     * Stops playback of all audio sources in {@link IRTPlayer#signals}
-     */
-    stop: function(){
-        this._do('stop');
-        this.playing = false;
-        this._do("setLoopState", false);
-    },
-
-    /**
-     * Will mute all audio sources of {@link IRTPlayer#signals} but the
-     * one with the passed index
-     *
-     * @param {integer} id - Array index number of active audio source
-     */
-    muteOthers: function(id){
-        id = parseInt(id);
-        if ((id < this.signals.length) && (id >= 0)){
-            this._do('mute');
-            this.signals[id].unmute();
-            this.activeSignal = id;
-        }
-        else{
-            log.error("Passed array index invalid!")
-        }
-    },
-    
-    /**
-     * Will unmute all audio sources in {@link IRTPlayer#signals}
-     */ 
-    unmuteAll: function(){
-        this._do('unmute');
-        this.activeSignal = null;
-    },
-    
-    /**
-     * Will attenuate all audio sources of {@link IRTPlayer#signals} but the
-     * one with the passed index. The active one will have gain value of
-     * {@link IRTPlayer#vol}
-     *
-     * @param {integer} id - Array index number of active audio source
-     * @param {float} attenuation - Gain value for other (attenuated)
-     * audio sources
-     */
-    attenuateOthers: function(id, attenuation){
-        id = parseInt(id);
-        if ((id < this.signals.length) && (id >= 0)){
-            this._do('setGain', attenuation);
-            this.signals[id].setGain(this.vol);
-            this.activeSignal = id;
-        }
-        else{
-            log.error("Passed array index invalid!")
-        }
-    },
-    
-    /**
-     * Disables / enables looping of the audio sources
-     */
-    toggleLoop: function() {
-        if (this.loopingState == false){
-            this.loopingState = true;
-        }
-        else {
-            this.loopingState = false;
-        }
-        this._do('toggleLoop');
-    },
-    
-    /**
-     * Sets start position for playback 
-     *
-     * @param {float} pos  - Start playback always at passed
-     * position for all audio sources in {@link IRTPlayer#signals}
-     */
-    setRangeStart: function(pos){
-        log.info("Range start: " + pos);
-        this._do('setRangeStart', pos);
-    },
-    
-    /**
-     * Sets end position for playback 
-     *
-     * @param {float} pos  - End playback always at passed
-     * position for all audio sources in {@link IRTPlayer#signals}
-     */
-    setRangeEnd: function(pos){
-        log.info("Range end: " + pos);
-        this._do('setRangeEnd', pos);
-    },
-    
-    /**
-     * Jump to passed position during playback 
-     *
-     * @param {float} time  - Must be between 0 and {@link
-     * AudioData#_rangeEnd}
-     */
-    setTime: function(time){
-        this._do('setTime', time);
-    }, 
-    
-    /**
-     * Returns current position of playback
-     * @return {number} pos - Current playback position
-     */
-    getTime: function(){
-        return this.signals[0].getTime();
-    },
-
-    /**
-     * Helper function to apply AudioData methods for all instances in
-     * {@link IRTPlayer#signals} array
-     * @param {string} func - Name of the method to be executed 
-     * @param {...args} args - variable number of additional arguments that
-     * should be passed to the method
-     * @protected
-     */
-    _do: function(func){
-        if (arguments.length == 2){
-            var args = arguments[1];    // prevents that a single argument will be passed as array with one entry
-        } else {
-            var args = Array.prototype.splice.call(arguments, 1);
-        }
-        for (var i=0; i < this.signals.length; i++){
-            this.signals[i][func](args);
-        }
-    }
-}
-
-
-exports.AudioData = AudioData;
-exports.IRTPlayer = IRTPlayer;
-
-},{"jquery":2,"loglevel":3}],10:[function(require,module,exports){
+},{"jquery":2,"underscore":5}],9:[function(require,module,exports){
+/*jshint esversion: 6 */
 /**
  * @file media_controller.js
  * @author Michael Weitnauer: {@link weitnauer@irt.de}
@@ -13035,7 +12219,6 @@ exports.IRTPlayer = IRTPlayer;
  */
 
 window.$ = require('jquery');
-var log = require('loglevel');
 
 
 /**
@@ -13046,21 +12229,20 @@ var log = require('loglevel');
  * @param [targetNode=ctx.destination] - Web Audio API node to which the
  * output of the GainController shall be connected to.
  */
-var GainController = function(ctx, targetNode){
+var GainController = function(ctx, targetNode=ctx.destination){
     this._gain = 1;
     this.gainNode = ctx.createGain();
 
     // Experimental highpass to avoid sizzling noinse while chaning view / angle
-    this.highpass = ctx.createBiquadFilter();
-    this.highpass.type = "highpass";
-    this.highpass.connect(this.gainNode);
-    this.setHighpassFreq(80);
+    //this.highpass = ctx.createBiquadFilter();
+    //this.highpass.type = "highpass";
+    //this.highpass.connect(this.gainNode);
+    //this.setHighpassFreq(80);
 
-    var targetNode = targetNode || ctx.destination;
     // FIXME: if applied here, the gainNode stays
     // connected with ctx.destination:
-    // this.reconnect(targetNode);
-}
+    this.connect(targetNode);
+};
 
 GainController.prototype = {
 
@@ -13118,6 +12300,7 @@ GainController.prototype = {
      * which the output of the GainController instance shall be connected to.
      */
     connect: function(nodes) {
+        console.debug("Connecting GainController to " + nodes);
         if (Object.prototype.toString.call(nodes) != "[object Array]"){          // == single Node
             this.gainNode.connect(nodes);
         } else {                                          // == array of Nodes
@@ -13132,16 +12315,838 @@ GainController.prototype = {
     * a given node or all connected nodes if node is not given/undefined.
     */
     disconnect: function(node){
-        //log.debug("Disconnecting ", this, " from ", node);
+        //console.debug("Disconnecting ", this, " from ", node);
         this.gainNode.disconnect(node);
     },
 
     setHighpassFreq: function(freq){
-        this.highpass.frequency.value = freq;
+        //this.highpass.frequency.value = freq;
+    }
+};
+
+module.exports = GainController;
+
+},{"jquery":2}],10:[function(require,module,exports){
+/**
+ * @file irtPlayer_new.js
+ * @author Michael Weitnauer: {@link weitnauer@irt.de}
+ */
+
+/**
+ * @license
+ * ----------------------------------------------------------------------------
+ * irtPlayer, a Javascript HTML5 Audio library for comparing audio files gaplessly
+ * v2.0.0
+ * Licensed under the MIT license.
+ * http://www.irt.de
+ * ----------------------------------------------------------------------------
+ * Copyright (C) 2015 Institut für Rundfunktechnik GmbH
+ * http://www.irt.de
+ * ----------------------------------------------------------------------------
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files ( the "Software" ), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * ----------------------------------------------------------------------------
+ */
+
+/**
+ * @module irtPlayer
+ *
+ */
+
+var log = require('loglevel');
+window.$ = require('jquery');
+
+
+/**
+ * Represents AudioData class which has all the logic to control an
+ * audio signal
+ *
+ * @constructor
+ *
+ * @param {Object} ctx - An AudioContext instance.
+ * @param {string} url - URL of the audio source (with or without
+ * extension).
+ * @param {Object} [targetNode=ctx.destination] - The audio node to which the AudioData
+ * instance shall be connected
+ * @param {boolean} [checkSupportFlag=true] - Enable / disable extension
+ * support for passed url (see [AudioData._checkExtension]{@link AudioData#_checkExtension})
+ *
+ * @fires module:irtPlayer~AudioData#audio_init
+ * @fires module:irtPlayer~AudioData#audio_loaded
+ * @fires module:irtPlayer~AudioData#audio_ended
+ */
+var AudioData = function(ctx, url, targetNode, checkSupportFlag) {
+    /** @protected
+     * @var {boolean} */
+    this.canplay = false;
+    var checkSupportFlag = checkSupportFlag || true;
+    if (checkSupportFlag == true){
+        var url = this._checkExtension(url);
+    }
+    /** @var {Object.<AudioContext>} */
+    this.ctx = ctx;
+    this.url = url;
+
+    this._playing = false;
+    this._looping = true;
+    this._rangeStart = 0;
+    this._rangeEnd = 0;
+    this._startTime = 0;
+    this._startOffset = 0;
+
+    /** @var {Object.<GainNode>} */
+    this.gainNode = this.ctx.createGain();
+    this.gain = this.getGain();
+    var targetNode = targetNode || this.ctx.destination;
+    this.gainNode.connect(targetNode);  // FF either refuses to break this connection or simply displays a no more existing connection..
+}
+
+AudioData.prototype = {
+
+    /**
+     * Create instance of new AudioBufferSource every time {@link
+     * AudioData#play} is called and initialize it.
+     *
+     * @protected
+     */
+    _initBuffer: function(){
+        this.audio = this.ctx.createBufferSource();
+        this.audio.loop = this._looping;
+        //this.audio.loop = false;  // workaround to compensate Chrome behavior. see comment in play()
+        this.audio.buffer = this._buffer;
+        this.audio.connect(this.gainNode);
+        this.audio.loopStart = this._rangeStart;
+        this.audio.loopEnd = this._rangeEnd;
+        this.audio.onended = this._onendedHandler.bind(this);
+
+        /**
+         * Will be fired once the new AudioBufferSource has been
+         * initilized.
+         * @event module:irtPlayer~AudioData#audio_init
+         */
+        $(this).triggerHandler("audio_init");
+    },
+
+    /**
+     * Will be called if AudioBufferSource instance has ended
+     *
+     * @protected
+     */
+    _onendedHandler: function(){
+        //console.debug("Audio buffer has ended!");
+        this._playing = false;
+        //this._startOffset = 0;
+
+        /**
+         * Will be fired once the playback has ended
+         * @event module:irtPlayer~AudioData#audio_ended
+         */
+        $(this).triggerHandler("audio_ended");
+    },
+
+    load: function(){
+        this._loadSound(this.url);
+    },
+
+    /**
+    * Start playback of audio signal
+    *
+    * @param {number} [pos] - Position from which the playback shall start
+    * (optional)
+    */
+    play: function(pos){
+        if ((this._playing == false) && (this.canplay)){
+            this._initBuffer();
+            this._startTime = this.audio.context.currentTime;
+            console.debug("Start time: " + this._startTime);
+            if (typeof pos != 'number'){        // detection with _.isNumber() could be more robust
+                var buffer_duration = this._buffer.duration;
+                var offset = (this._rangeStart + this._startOffset) % buffer_duration;
+                var duration = this._rangeEnd - offset;
+                console.debug("Offset: " + offset + "   Duration: " + duration);
+
+                // Passing a duration to start() causes undefined
+                // situation in current versions of Chrome. FF, Safari
+                // and Opera seem to treat this situation properly. See
+                // also https://github.com/WebAudio/web-audio-api/issues/421
+                this.audio.start(0, offset, duration);
+                //this.audio.start(0, offset);
+            } else {
+                console.debug("Starting playback at " + pos);
+                this._startOffset = pos;
+                var duration = this._rangeEnd - pos;
+                this.audio.start(0, pos, duration);
+            }
+            // workaround to force looping in Chrome. see comment above.
+            // Chrome seems to ignore looping state if duration is
+            // passed. --> init() with loop = false, then set "real"
+            // loop state here:
+            //this.audio.loop = this._looping;
+            this._playing = true;
+        }
+    },
+
+    /**
+     * Pause playback  - will only be executed if {@link
+     * AudioData#_playing} flag is true.
+     *
+     */
+    pause: function(){
+        if (this._playing == true){
+            this.audio.stop(0);
+            // Measure how much time passed since the last pause.
+            this._startOffset += this.audio.context.currentTime - this._startTime;
+            this._playing = false;
+            console.debug("Start offset: "+ this._startOffset);
+        }
+    },
+
+
+    /**
+     * Stops playback - if method is called during the playback
+     * is stopped, the thrown error will be catched.
+     */
+    stop: function(){
+        try {
+            this.audio.stop(0);
+            this._startOffset = 0;
+            this._playing = false;
+        } catch (err) {
+            log.warn("Can't stop audio.. " + err);
+        }
+    },
+
+    /**
+     * Sets gain of {@link AudioData} instance
+     *
+     * @param {float} gain - Value between 0.0 and 1.0
+     */
+    setGain: function(gain){
+        if ((gain >= 0.0) && (gain <= 1.0)){
+            this.gainNode.gain.value = gain;
+            this.gain = this.gainNode.gain.value;  // avoids that we accept uncompatible values
+        }
+        else {
+            log.warn("Gain values must be between 0 and 1");
+        }
+    },
+
+    /**
+     * Returns current gain value of {@link AudioData} instance
+     *
+     * @return {float} value - Float gain value
+     */
+    getGain: function(){
+        return this.gainNode.gain.value;  // or do we trust in this.gain ??
+    },
+
+    /**
+     * Disables / enables the loop of the {@link AudioData} instance
+     */
+    toggleLoop: function() {
+        if (this._looping == false){
+            this._looping = true;
+        } else {
+            this._looping = false;
+        }
+        try {
+            //this.pause();
+            this.audio.loop = this._looping;
+            //this.play();
+        } catch (err) {
+            log.warn("Can't set loop state: " + err);
+        }
+    },
+
+    /**
+     * Disables / enables the loop of the {@link AudioData} instance
+     */
+    setLoopState: function(bool) {
+        this._looping = bool;
+        try {
+            //this.pause();
+            this.audio.loop = this._looping;
+            //this.play();
+        } catch (err) {
+            log.warn("Can't set loop state: " + err);
+        }
+    },
+
+    /**
+     * Sets start position for playback
+     *
+     * @param {float} pos  - Start playback always at passed
+     * position
+     */
+    setRangeStart: function(pos){
+        pos = parseFloat(pos);
+        if (pos >= 0) {
+            pos = pos;
+        } else {
+            pos = 0;
+        }
+        this._rangeStart = pos;
+        try {
+            this.audio.loopStart = this._rangeStart;
+            console.debug("Loop start: " + pos);
+        } catch (err) {
+            log.warn("Can't set loop start yet.." + err);
+        }
+    },
+
+    /**
+     * Sets end position for playback
+     *
+     * @param {float} pos  - Playback end always at passed
+     * position
+     */
+    setRangeEnd: function(pos){
+        pos = parseFloat(pos);
+        if (pos <= this._buffer.duration) {
+            pos = pos;
+        } else {
+            pos = this._buffer.duration;
+        }
+        this._rangeEnd = pos;
+        try {
+            this.audio.loopEnd = this._rangeEnd;
+            console.debug("Loop end: " + pos);
+        } catch (err){
+            log.warn("Can't set loop start yet.." + err);
+        }
+    },
+
+    /**
+     * Mutes {@link AudioData} instance
+     */
+    mute: function(){
+        this.setGain(0.0);
+    },
+
+    /**
+     * Unmutes {@link AudioData} instance
+     */
+    unmute: function(){
+        this.setGain(1.0);
+    },
+
+    /**
+     * Jump to passed position during playback
+     *
+     * @param {float} pos  - Must be between 0 and {@link
+     * AudioData._rangeEnd}
+     */
+    setTime: function(pos){
+        if ((pos >= 0) && (pos <= this._rangeEnd)){
+            this.stop();
+            this.play(pos);
+        }
+    },
+
+    /**
+     * Returns current playback position
+     *
+     * @return {number} value - Current playback position
+     */
+    getTime: function(){
+        if (this._playing) {
+            return this.audio.context.currentTime - this._startTime + this._startOffset;
+        } else {
+            return this._startOffset;
+        }
+    },
+
+    /**
+    * Disconnects and reconnects {@link AudioData} instance to passed
+    * AudioNode(s)
+    *
+    * @param {...Object} nodes - Variable number of AudioNodes to which
+    * the {@link AudioData} instance shall be reconnected.
+    */
+    reconnect: function(nodes){
+        this.disconnect();
+        if (Object.prototype.toString.call(nodes) != "[object Array]"){          // == single Node
+            this.gainNode.connect(nodes);
+        }
+        else {                                          // == array of Nodes
+            for (var i=0; i < nodes.length; i++){
+                this.gainNode.connect(nodes[i]);
+            }
+        }
+    },
+
+    /**
+    * This method will disconnect the {@link AudioData} instance from
+    * all connected nodes (afterwards). Should be mostly
+    * ctx.destination.
+    */
+    disconnect: function(){
+        this.gainNode.disconnect();
+    },
+
+    /**
+     * Method will check whether the passed URL has an extension.
+     * Additionaly, {@link AudioData#_checkSupport} will be executed to
+     * identify the possible containers / codecs.
+     *
+     * @protected
+     * @param {string} url - URL
+     *
+     * @return {string} src - URL including file type extension which should be
+     * compatible with browser
+     */
+    _checkExtension: function(url){
+        var supports = this._checkSupport();
+
+        var re = /\.[0-9a-z]{3,4}$/i;   // strips the file extension (must be 3 or 4 characters)
+        var ext = re.exec(url);
+        if (ext == null){
+            if (supports.indexOf(".opus") > -1) {
+                var src = url + ".opus";
+            }
+            else if (supports.indexOf(".mp4") > -1) {
+                var src = url + ".mp4";
+            }
+            /*
+            else if (supports.indexOf(".m4a") > -1) {
+                var src = url + ".m4a";
+            }*/
+            else if (supports.indexOf(".ogg") > -1) {
+                var src = url + ".ogg";
+            }
+            else if (supports.indexOf(".mp3") > -1) {
+                var src = url + ".mp3";
+            }
+            else if (supports.indexOf(".wav") > -1) {
+                var src = url + ".wav";
+            }
+        } else {
+            if (supports.indexOf(ext[0]) > -1){
+                var src = url;
+            } else {
+                console.error("ERROR: Your browser does not support the needed audio codec (" + ext[0] + ")!");
+                var src = "";
+            }
+        }
+        return src
+    },
+
+    /**
+     * Detects whether the browser can play one of the listed containers
+     * / codecs
+     *
+     * @protected
+     * @return {string[]} support - An array containing all compatible
+     * formats
+     */
+    _checkSupport: function (){
+        var supports = [];
+        if (document.createElement('audio').canPlayType("audio/ogg codecs=opus") != ""){
+            supports.push(".opus");
+        }
+        if (document.createElement('audio').canPlayType("audio/ogg") != ""){
+            supports.push(".ogg");
+        }
+        if (document.createElement('audio').canPlayType("audio/x-wav") != ""){
+            supports.push(".wav");
+        }
+        if (document.createElement('audio').canPlayType("audio/mpeg") != ""){
+            supports.push(".mp3");
+        }
+        if (document.createElement('audio').canPlayType('audio/mp4') != ""){
+            supports.push(".mp4");
+        }
+        if (document.createElement('audio').canPlayType('audio/mp4; codecs="mp4a.40.5"') != ""){
+            supports.push(".m4a");
+        }
+        console.debug("Your browser seems to support these containers: " + supports);
+        return supports;
+    },
+
+    /**
+     * Load passed audio signal
+     *
+     * @protected
+     * @param {string} url - URL
+     */
+    _loadSound: function(url) {
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.responseType = 'arraybuffer';
+
+        // Decode asynchronously
+        var that = this;
+        request.onload = function() {
+            that.ctx.decodeAudioData(request.response, function(buffer) {
+                that._buffer = buffer;
+                that.canplay = true;
+                that._rangeEnd = that._buffer.duration;
+                that.duration = that._buffer.duration;
+                console.debug("audio loaded & decoded!");
+
+                /**
+                 * Will be fired if the audio data has been loaded &
+                 * decoded
+                 * @event module:irtPlayer~AudioData#audio_loaded
+                 */
+                $(that).triggerHandler("audio_loaded");
+            });
+        };
+        request.send();
     }
 }
 
 
+/**
+ * Represents Controller class which has all the logic to control an
+ * array of {@link AudioData} instances
+ *
+ * @constructor
+ *
+ * @param {Object} [ctx] - An AudioContext instance.
+ * @param {string[]} [sounds] - Array with list of URLs of the audio sources (with or without
+ * extension).
+ * @param {boolean} [checkSupportFlag=true] - Enable / disable extension
+ * support for passed url (see [AudioData._checkExtension]{@link AudioData#_checkExtension})
+ *
+ * @fires module:irtPlayer~IRTPlayer#player_ready
+ * @fires module:irtPlayer~IRTPlayer#player_ended
+ */
+var IRTPlayer = function(ctx, sounds, checkSupportFlag){
+    if (typeof ctx === 'undefined') {
+        if (typeof AudioContext !== 'undefined') {
+            var ctx = new AudioContext();
+        } else if (typeof webkitAudioContext !== 'undefined') {
+            var ctx = new webkitAudioContext();
+        } else {
+            alert("Your browser doesn't support the Web Audio API!");
+        }
+    }
+
+    var checkSupportFlag = typeof checkSupportFlag !== 'undefined' ? checkSupportFlag : true;
+    this._checkSupport = checkSupportFlag;
+    this.ctx = ctx;
+
+    /**
+     * @description Flag if audio signals will be looped
+     * @var {boolean} */
+    this.loopingState = true;
+
+    /**
+     * @description Array of {@link AudioData} instances
+     * @var {AudioData[]} */
+    this.signals = [];
+
+    /** @var {boolean} */
+    this.playing = false;
+    this.canplay = false;
+    this.init(sounds);
+
+    /**
+     * @description Global volume for all {@link AudioData} instances
+     * @var {float} */
+    this.vol = 1.0;
+
+    /**
+     * @description Has array entry integer of currently active file.
+     * See {@link IRTPlayer#muteOthers} or  {@link IRTPlayer#attenuateOthers}
+     * @var {integer}
+     */
+    this.activeSignal = null;
+    //this.muteOthers(0);
+    this._loaded_counter = 0;
+    this._ended_counter = 0;
+    }
+
+IRTPlayer.prototype = {
+
+    /**
+     * Adds all audio signals of passed array to the player
+     *
+     * @param {string[]} sounds - Array of URLs
+     */
+    init: function(sounds){
+        if (typeof sounds != "undefined"){
+            for (var i=0; i < sounds.length; i++) {
+                //this.signals[i] = new AudioData(this.ctx, sounds[i]); // can be also used to reset tracks array
+                this.addURL(sounds[i]);
+            }
+
+            // we must bind the event listeners here, because within
+            // addURL() it would fulfilled every time the event would
+            // be triggered, since the signals[] array does not yet
+            // contain all signals during addURL() calls here..
+            /*
+            for (var i=0; i < this.signals.length; i++){
+                this._addEventListener(this.signals[i]);
+            }
+            */
+        }
+        else {
+            log.warn('No urls for sounds passed');
+        }
+    },
+
+    /**
+     * Will add audio sources manually to the {@link IRTPlayer} instance
+     *
+     * @param {string} url - URL of to be added audio source
+     */
+    addURL: function(url){
+        var audio = new AudioData(this.ctx, url, this.ctx.destination, this._checkSupport);
+        this.addAudioData(audio);
+
+        // The event listener must be registered before the event trigger can be
+        // created! So we call the load() method explicitely afterwards.
+        audio.load();
+    },
+
+    /**
+     * Will add {@link AudioData} instances to the {@link IRTPlayer} instance
+     *
+     * @param {AudioData} audioData - instance of to be added audio data object
+     */
+    addAudioData: function(audioData){
+        this._addEventListener(audioData);
+        audioData.setLoopState(false);
+        this.signals.push(audioData);
+    },
+
+    _addEventListener: function(audioData){
+        // NOTE: This is likely working only due to the delayed loading of
+        // the audio files. As we all know, the event listener must be already registered
+        // before the event trigger can be registered as well. So in the worst case,
+        // the audio files will be loaded and decoded _before_ the listener is
+        // registered which means that NO event will be triggered and received..!
+        // TODO: find a good workaround for this issue!
+        $(audioData).on("audio_loaded", function(){
+            this._loaded_counter += 1;
+            if (this._loaded_counter == this.signals.length){
+                console.debug("All buffers are loaded & decoded");
+                /**
+                 * Will be fired to the DOM once all audio signals are loaded.
+                 * This event is triggered to the DOM and not to the object instance
+                 * as this would mean that the listener would have to be registered on
+                 * the not yet exisiting object instance... ==> logic proplem.
+                 * TODO: find alternative solution with promises, callback, etc
+                 * @event module:irtPlayer~IRTPlayer#player_ready
+                 */
+                $(this).triggerHandler("player_ready");
+                this.canplay = true;
+                this.duration = this.signals[0].duration;
+            }
+        }.bind(this));
+
+        $(audioData).on("audio_ended", function(){
+            this._ended_counter += 1;
+            if (this._ended_counter == this.signals.length){
+                this.playing = false;
+                console.debug("All buffers ended");
+                /**
+                 * Will be fired to the DOM once all audio signals are loaded.
+                 * This event is triggered to the DOM and not to the object instance
+                 * as this would mean that the listener would have to be registered on
+                 * the not yet exisiting object instance... ==> logic proplem.
+                 * TODO: find alternative solution with promises, callback, etc
+                 * @event module:irtPlayer~IRTPlayer#player_ended
+                 */
+                $(this).triggerHandler("player_ended");
+            }
+        }.bind(this));
+    },
+
+    /**
+     * Toggles play / pause of playback
+     */
+    togglePlay: function(){
+        if (this.playing == false){
+            this.play();
+        }
+        else {
+            this.pause();
+        }
+    },
+
+    /**
+     * Starts playback of all audio sources in {@link IRTPlayer#signals}
+     */
+    play: function(){
+        this._do('play');
+        this.playing = true;
+        this._do('setLoopState', this.loopingState);
+        this._ended_counter = 0;
+    },
+
+    /**
+     * Pauses playback of all audio sources in {@link IRTPlayer#signals}
+     */
+    pause: function(){
+        this._do('pause');
+        this.playing = false;
+    },
+
+    /**
+     * Stops playback of all audio sources in {@link IRTPlayer#signals}
+     */
+    stop: function(){
+        this._do('stop');
+        this.playing = false;
+        this._do("setLoopState", false);
+    },
+
+    /**
+     * Will mute all audio sources of {@link IRTPlayer#signals} but the
+     * one with the passed index
+     *
+     * @param {integer} id - Array index number of active audio source
+     */
+    muteOthers: function(id){
+        id = parseInt(id);
+        if ((id < this.signals.length) && (id >= 0)){
+            this._do('mute');
+            this.signals[id].unmute();
+            this.activeSignal = id;
+        }
+        else{
+            console.error("Passed array index invalid!")
+        }
+    },
+
+    /**
+     * Will unmute all audio sources in {@link IRTPlayer#signals}
+     */
+    unmuteAll: function(){
+        this._do('unmute');
+        this.activeSignal = null;
+    },
+
+    /**
+     * Will attenuate all audio sources of {@link IRTPlayer#signals} but the
+     * one with the passed index. The active one will have gain value of
+     * {@link IRTPlayer#vol}
+     *
+     * @param {integer} id - Array index number of active audio source
+     * @param {float} attenuation - Gain value for other (attenuated)
+     * audio sources
+     */
+    attenuateOthers: function(id, attenuation){
+        id = parseInt(id);
+        if ((id < this.signals.length) && (id >= 0)){
+            this._do('setGain', attenuation);
+            this.signals[id].setGain(this.vol);
+            this.activeSignal = id;
+        }
+        else{
+            console.error("Passed array index invalid!")
+        }
+    },
+
+    /**
+     * Disables / enables looping of the audio sources
+     */
+    toggleLoop: function() {
+        if (this.loopingState == false){
+            this.loopingState = true;
+        }
+        else {
+            this.loopingState = false;
+        }
+        this._do('toggleLoop');
+    },
+
+    /**
+     * Sets start position for playback
+     *
+     * @param {float} pos  - Start playback always at passed
+     * position for all audio sources in {@link IRTPlayer#signals}
+     */
+    setRangeStart: function(pos){
+        console.info("Range start: " + pos);
+        this._do('setRangeStart', pos);
+    },
+
+    /**
+     * Sets end position for playback
+     *
+     * @param {float} pos  - End playback always at passed
+     * position for all audio sources in {@link IRTPlayer#signals}
+     */
+    setRangeEnd: function(pos){
+        console.info("Range end: " + pos);
+        this._do('setRangeEnd', pos);
+    },
+
+    /**
+     * Jump to passed position during playback
+     *
+     * @param {float} time  - Must be between 0 and {@link
+     * AudioData#_rangeEnd}
+     */
+    setTime: function(time){
+        this._do('setTime', time);
+    },
+
+    /**
+     * Returns current position of playback
+     * @return {number} pos - Current playback position
+     */
+    getTime: function(){
+        return this.signals[0].getTime();
+    },
+
+    /**
+     * Helper function to apply AudioData methods for all instances in
+     * {@link IRTPlayer#signals} array
+     * @param {string} func - Name of the method to be executed
+     * @param {...args} args - variable number of additional arguments that
+     * should be passed to the method
+     * @protected
+     */
+    _do: function(func){
+        if (arguments.length == 2){
+            var args = arguments[1];    // prevents that a single argument will be passed as array with one entry
+        } else {
+            var args = Array.prototype.splice.call(arguments, 1);
+        }
+        for (var i=0; i < this.signals.length; i++){
+            this.signals[i][func](args);
+        }
+    }
+}
+
+
+exports.AudioData = AudioData;
+exports.IRTPlayer = IRTPlayer;
+
+},{"jquery":2,"loglevel":3}],11:[function(require,module,exports){
+/*jshint esversion: 6 */
+/**
+ * @file media_controller.js
+ * @author Michael Weitnauer: {@link weitnauer@irt.de}
+ */
+
+/**
+ * @module bogJS
+ *
+ */
+
+window.$ = require('jquery');
+var GainController = require('./gain_controller');
 
 /**
  * Represents MediaElementController class which has all the logic to control a HTML5 media element
@@ -13182,11 +13187,11 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
         this.gainController[i] = new GainController(this.ctx, targetNodeList[i]);
 
         // TODO: Workaround for wrong channel order of decoded bitstream
-        this._splitter.connect(this.gainController[i].highpass, i);
+        this._splitter.connect(this.gainController[i].gainNode, i);
     }
 
     this._mediaElement.onended = function(){
-        log.debug("Audio buffer has ended!");
+        console.debug("Audio buffer has ended!");
         this._playing = false;
 
         /**
@@ -13197,12 +13202,12 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
     }.bind(this);
 
     this._mediaElement.onstalled = function(){
-        log.info("Pausing playback - need to buffer more");
+        console.info("Pausing playback - need to buffer more");
         this.ctx.suspend();
     }.bind(this);
 
     this._mediaElement.onplaying = function(){
-        log.info("Resuming playback of media element");
+        console.info("Resuming playback of media element");
         if (this.ctx.state === "suspended"){
             this.ctx.resume();
         }
@@ -13210,7 +13215,7 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
 
     this._mediaElement.oncanplaythrough = function(){
         this.canplay = true;
-        log.info("Playback of media element can start");
+        console.info("Playback of media element can start");
 
         /**
          * Will be fired if media element playback can start
@@ -13238,7 +13243,7 @@ MediaElementController.prototype = {
         if (typeof pos != 'number'){        // detection with _.isNumber() could be more robust
             this._mediaElement.play();
         } else {
-            log.debug("Starting playback at " + pos);
+            console.debug("Starting playback at " + pos);
             this.setTime(pos);
             this._mediaElement.play()
         }
@@ -13338,7 +13343,8 @@ MediaElementController.prototype = {
 
 module.exports = MediaElementController;
 
-},{"jquery":2,"loglevel":3}],11:[function(require,module,exports){
+},{"./gain_controller":9,"jquery":2}],12:[function(require,module,exports){
+/*jshint esversion: 6 */
 /**
  * @file object.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -13348,7 +13354,7 @@ module.exports = MediaElementController;
  * @module bogJS
  */
 
-var log = require('loglevel');
+var GainController = require('./gain_controller');
 
 /**
  * Represents ObjectController class which has all the logic to control an
@@ -13364,7 +13370,7 @@ var log = require('loglevel');
  * shall be connected to.
  */
 
-var ObjectController = function(ctx, sourceNode, targetNode) {
+var ObjectController = function(ctx, sourceNode, targetNode=ctx.destination) {
     /**
      * Instance of Web Audio Panner node
      * @var {Object.<AudioContext.PannerNode>}
@@ -13372,10 +13378,10 @@ var ObjectController = function(ctx, sourceNode, targetNode) {
     this.panner = ctx.createPanner();
 
     // Experimental highpass to avoid sizzling noinse while chaning view / angle
-    this.highpass = ctx.createBiquadFilter();
-    this.highpass.type = "highpass";
-    this.setHighpassFreq(80);
-    this.highpass.connect(this.panner);
+    //this.highpass = ctx.createBiquadFilter();
+    //this.highpass.type = "highpass";
+    //this.setHighpassFreq(80);
+    //this.highpass.connect(this.panner);
 
     /**
      * Has the current panning mode of the object
@@ -13389,10 +13395,10 @@ var ObjectController = function(ctx, sourceNode, targetNode) {
     this.gain = 1;  // valid values between 0 and 1  // FIXME: make private and use set and get methods
 
     this._state = false;
+    this.stateNode = new GainController(ctx, this.panner);
+    //this.stateNode.connect(this.panner);
 
     this.setAudio(sourceNode);
-
-    var targetNode = targetNode || ctx.destination;
     this.panner.connect(targetNode);
 };
 
@@ -13412,7 +13418,7 @@ ObjectController.prototype = {
     setPosition: function(xyz){
         var my_xyz = [parseFloat(xyz[0]), parseFloat(xyz[1]), parseFloat(xyz[2])];
         this.panner.setPosition(xyz[0], xyz[1], xyz[2]);
-        log.debug("New Position: " + my_xyz);
+        console.debug("New Position: " + my_xyz);
         this.position = xyz;
     },
 
@@ -13432,13 +13438,14 @@ ObjectController.prototype = {
      */
     setStatus: function(state){
         if ((state === true) || (state == 1)){
-            this.audio.unmute();
+            this.stateNode.unmute();
             this._state = true;
         }
         else if ((state === false) || (state == 0)){
-            this.audio.mute();
+            this.stateNode.mute();
             this._state = false;
         }
+        console.info("Setting state to " + this._state);
     },
 
     /**
@@ -13459,24 +13466,16 @@ ObjectController.prototype = {
      * value shall be linear faded to passed gain value from passed time on. If
      * false, the gain value will be applied immediately.
      */
-    setGain: function(gain, time, interpolation){
-        var time = time || "now";
-        var interpolation = interpolation || false;
-
-        if ((gain >= 0.0) && (gain <= 1.0)){
-            if (time === "now") {
-                this.audio.setGain(gain);
-                this.gain = gain;
-            }
-            else if ((time !== "now") && (interpolation === false)) {
-                this.audio.gainNode.gain.setValueAtTime(gain, time);
-            }
-            else if ((time !== "now") && (interpolation !== false)){
-                this.audio.gainNode.gain.linearRampToValueAtTime(gain, time);
-            }
+    setGain: function(gain, time="now", interpolation=false){
+        if (time === "now") {
+            this.audio.setGain(gain);
+            this.gain = gain;
         }
-        else {
-            log.error("Gain values must be between 0 and 1");
+        else if ((time !== "now") && (interpolation === false)) {
+            this.audio.gainNode.gain.setValueAtTime(gain, time);
+        }
+        else if ((time !== "now") && (interpolation !== false)){
+            this.audio.gainNode.gain.linearRampToValueAtTime(gain, time);
         }
     },
 
@@ -13503,7 +13502,7 @@ ObjectController.prototype = {
             this.panningType = this.panner.panningModel;
         }
         else {
-            log.error("Only >>HRTF<< or >>equalpower<< are valid types");
+            console.error("Only >>HRTF<< or >>equalpower<< are valid types");
         }
     },
 
@@ -13582,10 +13581,10 @@ ObjectController.prototype = {
             // FIXME: AudioData() class should also have a connect method.
             // Better would be to use derived class mechanisms.
             if(this.audio.connect) {
-                this.audio.connect(this.highpass);
+                this.audio.connect(this.stateNode);
             }
             else {
-                this.audio.reconnect(this.highpass);
+                this.audio.reconnect(this.stateNode);
             }
         }
     },
@@ -13593,11 +13592,12 @@ ObjectController.prototype = {
     setHighpassFreq: function(freq){
         this.highpass.frequency.value = freq;
     }
-}
+};
 
 module.exports = ObjectController;
 
-},{"loglevel":3}],12:[function(require,module,exports){
+},{"./gain_controller":9}],13:[function(require,module,exports){
+/*jshint esversion: 6 */
 /**
  * @file object_manager.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -13669,7 +13669,6 @@ module.exports = ObjectController;
 
 window.$ = require('jquery');
 window._ = require('underscore');
-window.log = require('loglevel');
 var WAAClock = require('waaclock');
 var ChannelOrderTest = require('./channelorder_test');
 var AudioData = require('./html5_player/core').AudioData;
@@ -13742,7 +13741,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this._kfMapping = {};
     this._last_kfMapping = {};
 
-    this._audiobedTracks = {}
+    this._audiobedTracks = {};
     this._groupObjURLs = {};
     this._singleObjURLs = {};
     this._audiobed = false;
@@ -13770,8 +13769,8 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this._listenerOrientation = [0, 0, -1];
     this.setListenerOrientation(0, 0, -1);
 
-    $(this.reader).on('scene_loaded', function(e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds){
-        log.debug('Scene data loaded!');
+    $(this.reader).on('scene_loaded', function(e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo){
+        console.debug('Scene data loaded!');
 
         /**
          * 'Dictionary' containing keyframes + commands triplets per keyframe.
@@ -13793,6 +13792,12 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
          * @var {module:bogJS~sceneInfo}
          */
         this._sceneInfo = sceneInfo;
+        /**
+         * 'Dictionary' containing interactive info
+         * @abstract
+         * @var {module:bogJS~interactiveInfo}
+         */
+        this.interactiveInfo = interactiveInfo;
         this.object_count = sceneInfo.object_count || 0;
         this.roomDimensions = sceneInfo.room_dimensions || [10, 10, 3];
         this._listenerPosition = sceneInfo.listener_position || [0, 0, 0];
@@ -13821,7 +13826,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
         this.init();
     }.bind(this));
     this.reader.load(url);
-}
+};
 
 ObjectManager.prototype = {
 
@@ -13858,7 +13863,7 @@ ObjectManager.prototype = {
             // the assets are not yet loaded and decoded.
             $(this._audiobed).on('audio_loaded', function(){
                 $(document).triggerHandler('om_ready');
-                log.debug('Audiobed ready for playback');
+                console.debug('Audiobed ready for playback');
             }.bind(this));
             $(this._audiobed).on('audio_ended', function(){
                 $(document).triggerHandler('om_ended');
@@ -13870,7 +13875,7 @@ ObjectManager.prototype = {
             container = container.split('.').join(""); // removes dot from the string
             var chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
             $(chOrderTest).on('order_ready', function(e, order){
-                log.debug('Got channel order: ' + order);
+                console.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
                 // confusions and strange behaviours..
@@ -13880,7 +13885,7 @@ ObjectManager.prototype = {
                 // now assign correct gainController to corresponding
                 // pannerNode
                 for (var i = 0; i < order.length; i++){
-                    log.debug("Reconnecting GainController " + i + " with Bed " + order[i]);
+                    console.debug("Reconnecting GainController " + i + " with Bed " + order[i]);
                     this.objects["Bed"+order[i]].setAudio(this._audiobed.gainController[i]);
                 }
             }.bind(this));
@@ -13933,7 +13938,12 @@ ObjectManager.prototype = {
         }
         this.setPanningType(this._panningType);
         $(document).triggerHandler('om_initialized');
-        log.debug('Scene sucessfully initialized!');
+        console.debug('Scene sucessfully initialized!');
+        if (this.interactiveInfo.switchGroup){
+            for (var g of Object.keys(this.interactiveInfo.switchGroup)){
+                this._initSwitchGroup(g);
+            }
+        }
         //this.start();
     },
 
@@ -13949,11 +13959,11 @@ ObjectManager.prototype = {
                 this._audiobed.play();
             }
             var that = this;
-            var evt = this._clock.setTimeout(function(){log.debug(that.ctx.currentTime)}, 1).repeat(1);
+            var evt = this._clock.setTimeout(function(){console.debug(that.ctx.currentTime);}, 1).repeat(1);
             this.playing = true;
             return true;
         } else {
-            log.info("Audio signals not yet ready for playing.");
+            console.info("Audio signals not yet ready for playing.");
             return false;
         }
     },
@@ -14002,13 +14012,13 @@ ObjectManager.prototype = {
         if (this._audiobed !== false){
             this._audiobed.stop();
         }
-        for (kf in this._groupObjPlayers){
-            for (group in this._groupObjPlayers[kf]){
+        for (var kf in this._groupObjPlayers){
+            for (var group in this._groupObjPlayers[kf]){
                 this._groupObjPlayers[kf][group].stop();
             }
         }
-        for (kf in this._singleObjAudios){
-            for (idx in this._singleObjAudios[kf]){
+        for (var kf in this._singleObjAudios){
+            for (var idx in this._singleObjAudios[kf]){
                 this._singleObjAudios[kf][idx].stop();
             }
         }
@@ -14036,11 +14046,11 @@ ObjectManager.prototype = {
         }
         this._handleKeyframe(closest_kf);
 
-        for (key in this._evts){
+        for (var key in this._evts){
             var evt = this._evts[key];
             var evt_time = parseFloat(key);
             var newTime = evt_time - time + this.ctx.currentTime;
-            //log.debug("Evt " + key + " rescheduled from " + evt.deadline + " to " + newTime);
+            //console.debug("Evt " + key + " rescheduled from " + evt.deadline + " to " + newTime);
             evt.schedule(newTime);
         }
 
@@ -14059,7 +14069,7 @@ ObjectManager.prototype = {
                 } else {
                     // should stop audio if audioNewPos > duration
                     this._singleObjAudios[kf][idx].setTime(audioNewPos);
-                    log.debug("Set audio " + idx + " to position " + audioNewPos);
+                    console.debug("Set audio " + idx + " to position " + audioNewPos);
                 }
             }
         }
@@ -14074,7 +14084,7 @@ ObjectManager.prototype = {
                 } else {
                     // should stop audio if audioNewPos > duration
                     this._groupObjPlayers[kf][group].setTime(audioNewPos);
-                    log.debug("Set group " + group + " to position " + audioNewPos);
+                    console.debug("Set group " + group + " to position " + audioNewPos);
                 }
             }
         }
@@ -14101,7 +14111,7 @@ ObjectManager.prototype = {
      * objects
      */
     setPanningType: function(type){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setPanningType(type);
         }
         this._panningType = type;
@@ -14159,7 +14169,7 @@ ObjectManager.prototype = {
     },
 
     _handleKeyframe: function(key){
-        log.debug("Activating keyframe: " + key);
+        console.debug("Activating keyframe: " + key);
         var keyframe = this._keyframes[key];
         //this._kfMapping = {};
         if (this.interactive === false){
@@ -14202,9 +14212,9 @@ ObjectManager.prototype = {
                     }
                 }
                 else if (cmd === "is_present"){
-                    if (params == 0) {
+                    if (params === 0) {
                         state = false;
-                    } else if (params == 1) {
+                    } else if (params === 1) {
                         state = true;
                     } else {
                         state = params;
@@ -14245,9 +14255,9 @@ ObjectManager.prototype = {
 
         // now check if all assets are ready for playing:
         for (var el in this._kf_canplay[kf]){
-            log.debug(el);
+            console.debug(el);
             if (this._kf_canplay[kf][el] === false){
-                log.debug("Pausing playback as not all assets are decoded yet.. ");
+                console.debug("Pausing playback as not all assets are decoded yet.. ");
                 this.pause();
                 break;
             }
@@ -14273,14 +14283,14 @@ ObjectManager.prototype = {
 
     _loadedStateDelegate: function(kf, obj){
         return function(){
-            log.debug("Asset now ready: " + obj);
+            console.debug("Asset now ready: " + obj);
             this._kf_canplay[kf][obj] = true;
             this._checkLoadedState(kf);
         }.bind(this);
     },
 
     _checkLoadedState: function(kf){
-        log.debug(this._kf_canplay[kf]);
+        console.debug(this._kf_canplay[kf]);
         for (var obj in this._kf_canplay[kf]) {
             if (this._kf_canplay[kf][obj] !== true){
                 console.debug("We still need to wait for decoding of asset(s)");
@@ -14300,12 +14310,12 @@ ObjectManager.prototype = {
 
     _handleKeyframeMappings: function(){
         if (JSON.stringify(this._last_kfMapping) !== JSON.stringify(this._kfMapping)){
-            log.info("Track mapping has changed" + JSON.stringify(this._kfMapping));
+            console.info("Track mapping has changed" + JSON.stringify(this._kfMapping));
             // Firstly disconnect everything to make sure that no old
             // mappings stay connected
             // That means that changes have to be made explicitely and
             // not implicitely!
-            for (key in this._audioInstances){
+            for (var key in this._audioInstances){
                 this._audioInstances[key].disconnect();
             }
             /*
@@ -14314,7 +14324,7 @@ ObjectManager.prototype = {
             */
 
             // And now connect all the mappings as per the keyframe
-            for (key in this._kfMapping){
+            for (var key in this._kfMapping){
                 var pannerObjects = [];
                 var objs = this._kfMapping[key];
                 if (typeof objs === "string"){    // == attribute
@@ -14322,12 +14332,12 @@ ObjectManager.prototype = {
                 }
                 else if (typeof objs === "object"){   // == array
                     for (var i = 0; i < objs.length; i++){
-                        log.trace("Adding " + objs[i] + " to the pannerObject array");
+                        console.trace("Adding " + objs[i] + " to the pannerObject array");
                         pannerObjects.push(this.objects[objs[i]].highpass);
                     }
                 }
                 this._audioInstances[key].reconnect(pannerObjects);
-                log.debug("Reconnecting " + key + " with " + objs);
+                console.debug("Reconnecting " + key + " with " + objs);
 
                 /**
                  * Will be fired if track mapping for object from list changes
@@ -14342,7 +14352,7 @@ ObjectManager.prototype = {
     },
 
     _processCurrentKeyframes: function(){
-        for (key in this._keyframes){
+        for (var key in this._keyframes){
             //console.log(key);
             var relTime = parseFloat(this.ctx.currentTime - this._startTime + parseFloat(key));
             this._evts[key] = this._clock.setTimeout(this._buildKeyframeCallback(key, relTime),relTime);
@@ -14354,13 +14364,13 @@ ObjectManager.prototype = {
         return function(){
             that._handleKeyframe(key);
             that._currentKeyframeIndex = parseFloat(key);
-            log.debug('Keyframe ' + key + ' reached at context time: ' + relTime);
-        }
+            console.debug('Keyframe ' + key + ' reached at context time: ' + relTime);
+        };
     },
 
     /*
     update: function(){
-        log.trace("Updating scene..")
+        console.trace("Updating scene..")
         // neue metadaten lesen
         // aktuelle Zeit vom AudioContext holen
         // Objekt-Eigenschaften entsprechend ändern
@@ -14384,7 +14394,7 @@ ObjectManager.prototype = {
      * @param factor
      */
     setRollOffFactor: function(factor){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setRollOffFactor(factor);
         }
         this._triggerChange();
@@ -14396,7 +14406,7 @@ ObjectManager.prototype = {
      * @param model
      */
     setDistanceModel: function(model){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setDistanceModel(model);
         }
         this._triggerChange();
@@ -14408,7 +14418,7 @@ ObjectManager.prototype = {
      * @param refDistance
      */
     setRefDistance: function(refDistance){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setRefDistance(refDistance);
         }
         this._triggerChange();
@@ -14420,7 +14430,7 @@ ObjectManager.prototype = {
      * @param maxDistance
      */
     setMaxDistance: function(maxDistance){
-        for (key in this.objects){
+        for (var key in this.objects){
             this.objects[key].setMaxDistance(maxDistance);
         }
         this._triggerChange();
@@ -14430,6 +14440,21 @@ ObjectManager.prototype = {
         for (var key in this.objects){
             this.objects[key].setHighpassFreq(freq);
         }
+    },
+
+    _initSwitchGroup: function(groupName){
+        var item = this.interactiveInfo.switchGroup[groupName].default;
+        this.switchGroup(groupName, item);
+    },
+
+    switchGroup: function(groupName, item){
+        var objects = Object.values(this.interactiveInfo.switchGroup[groupName].items);
+        for (var obj of objects){
+            this.objects[obj].setStatus(false);
+        }
+        var active_obj = this.interactiveInfo.switchGroup[groupName].items[item];
+        console.info("SwitchGroup " + groupName + " enable " + active_obj);
+        this.objects[active_obj].setStatus(true);
     },
 
     /**
@@ -14444,13 +14469,13 @@ ObjectManager.prototype = {
         this.setListenerPosition(pos[0] + 0.000001, pos[1], pos[2]);
         this.setListenerPosition(pos[0], pos[1], pos[2]);
     }
-}
+};
 
 
 
 module.exports = ObjectManager;
 
-},{"./channelorder_test":8,"./html5_player/core":9,"./media_controller":10,"./object":11,"./scene_reader":13,"jquery":2,"loglevel":3,"underscore":5,"waaclock":6}],13:[function(require,module,exports){
+},{"./channelorder_test":8,"./html5_player/core":10,"./media_controller":11,"./object":12,"./scene_reader":14,"jquery":2,"underscore":5,"waaclock":6}],14:[function(require,module,exports){
 /**
  * @file scene_reader.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -14465,7 +14490,6 @@ module.exports = ObjectManager;
  */
 
 window.$ = require('jquery');
-var log = require('loglevel');
 
 /**
  * Represents SceneReader class. Will load and parse scene data from URL for the
@@ -14473,9 +14497,9 @@ var log = require('loglevel');
  *
  * @constructor
  * @abstract
- * 
- * @param {loaded_callback} [loaded_callback=undefined] - Callback that will be executed 
- * if scene data is loaded and parsed. 
+ *
+ * @param {loaded_callback} [loaded_callback=undefined] - Callback that will be executed
+ * if scene data is loaded and parsed.
  * @fires module:bogJS~SceneReader#scene_loaded
  *
  */
@@ -14485,7 +14509,7 @@ var SceneReader = function(loaded_callback){
 }
 
 SceneReader.prototype = {
-    
+
     /**
      * Executes XHR to load and parse the scene data from the passed URL
      *
@@ -14493,7 +14517,7 @@ SceneReader.prototype = {
      * @fires module:bogJS~SceneReader#scene_loaded
      */
     load: function(url){
-        // we need to do this as within the anonymous success function of the ajax call, 
+        // we need to do this as within the anonymous success function of the ajax call,
         // 'this' will refer to the window object and NOT to the SceneReader instance!
         var that = this;
         $.ajax({
@@ -14518,48 +14542,52 @@ SceneReader.prototype = {
         var groupObjects = data[3];
         var audiobeds = data[4];
         var extraObjects = data[5];
+        var interactiveInfo = data[6];
         var singleObjects = {};
         for (var kf in extraObjects){
             for (var group in groupObjects[kf]){
                 for (var el in groupObjects[kf][group]){
                     var obj = groupObjects[kf][group][el];
                     var idx = extraObjects[kf].indexOf(obj);
-                    log.debug('Checking for double entry for object ' + obj);
+                    console.debug('Checking for double entry for object ' + obj);
                     if (idx > -1) {
                         extraObjects[kf].splice(idx, 1);
-                        log.debug('Found group object ' + obj + ' also as single objects entry. Removing if from the list.');
+                        console.debug('Found group object ' + obj + ' also as single objects entry. Removing if from the list.');
                     }
                 }
             }
         }
         singleObjects = extraObjects;
-        
-        /** 
+
+        /**
          * Will be fired if scene data is loaded and parsed
          * @event module:bogJS~SceneReader#scene_loaded
-         * @abstract 
+         * @abstract
          *
-         * @property {module:bogJS~keyframes} keyframes - 'Dictionary' with keyframes 
-         * (Array with commands per detected keyframe in scene) 
-         * 
+         * @property {module:bogJS~keyframes} keyframes - 'Dictionary' with keyframes
+         * (Array with commands per detected keyframe in scene)
+         *
          * @property {module:bogJS~audioURLs} audioURLs - 'Dictionary' with audioURLs
          * per Object in Scene (to be used for mapping of objects to
          * audio signals)
-         * 
+         *
          * @property {module:bogJS~sceneInfo} sceneInfo - 'Dictionary' with additional sceneInfo
          * (Can contain 'name', 'object_count', 'listener_orientation',
          * 'listener_position' and / or 'room_dimensions')
-         * 
+         *
          * @property {module:bogJS~groupObjects} groupObjects - 'Dictionary'
-         * containing info to identify grouped objects 
-         * 
+         * containing info to identify grouped objects
+         *
          * @property {module:bogJS~singleObjects} singleObjects - 'Dictionary'
          * containing info to identify single objects
          *
          * @property {module:bogJS~audiobeds} audiobeds - 'Dictionary'
          * containing objects and their "track mapping" info
+         *
+         * @property {module:bogJS~interactiveInfo} interactiveInfo - 'Dictionary'
+         * containing info for interactive objects and groups
          */
-        $(this).triggerHandler('scene_loaded', [keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds])
+        $(this).triggerHandler('scene_loaded', [keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo])
     },
 
     _tokenize: function(d){
@@ -14585,6 +14613,9 @@ SceneReader.prototype = {
         var keyframes = {};
         var audioURLs = {};
         var sceneInfo = {};
+        var interactiveInfo = {};
+        interactiveInfo.switchGroup = {};
+        interactiveInfo.gain = {};
         var groups = {};
         var extraObjects = {};
         var audiobeds = {};
@@ -14592,26 +14623,41 @@ SceneReader.prototype = {
         for (var i = 0; i < m.length; i++) {
             if (m[i].cmd[0] === "spatdif"){  // darauf verzichten um die lesbarkeit des codes zu verbesern?
                 if (m[i].cmd[1] === "meta"){
-                    var meta = m[i]
+                    var meta = m[i];
                     if (meta.cmd[3] === "name") {
-                        sceneInfo['name'] = meta.params;
+                        sceneInfo.name = meta.params;
                     } else if (meta.cmd[2] === "objects") {
-                        sceneInfo['object_count'] = meta.params; 
+                        sceneInfo.object_count = meta.params;
                     } else if ((meta.cmd[2] === "reference") && (meta.cmd[3] === "orientation")){
-                        sceneInfo['listener_orientation'] = this._parseFloatArray(meta.params);
+                        sceneInfo.listener_orientation = this._parseFloatArray(meta.params);
                     } else if ((meta.cmd[2] === "room") && (meta.cmd[3] === "origin")){
-                        sceneInfo['listener_position'] = this._parseFloatArray(meta.params);
+                        sceneInfo.listener_position = this._parseFloatArray(meta.params);
                     } else if ((meta.cmd[2] === "room") && (meta.cmd[3] === "dimension")){
-                        sceneInfo['room_dimensions'] = this._parseFloatArray(meta.params);
+                        sceneInfo.room_dimensions = this._parseFloatArray(meta.params);
                     } else if ((meta.cmd[2] === "audiobed") && (meta.cmd[3] === "url")) {
-                        sceneInfo['audiobed_url'] = meta.params;
+                        sceneInfo.audiobed_url = meta.params;
                     } else if ((meta.cmd[2] === "audiobed") && (meta.cmd[3] === "tracks")) {
-                        sceneInfo['audiobed_tracks'] = meta.params;
+                        sceneInfo.audiobed_tracks = meta.params;
+                    } else if (meta.cmd[2] === "interactive") {
+                        if (meta.cmd[3] === "switchGroup") {
+                            if (meta.cmd[4] === "label") {
+                                var label = meta.params[0];
+                                interactiveInfo.switchGroup[label] = {};
+                                interactiveInfo.switchGroup[label].default = meta.params[1];
+                                interactiveInfo.switchGroup[label].items = {};
+                            } else {
+                                var item_label = meta.params[0];
+                                interactiveInfo.switchGroup[label].items[item_label] = meta.params[1];
+                            }
+                        } else if (meta.cmd[3] === "gain"){
+                            interactiveInfo.gain[meta.cmd[4]] = meta.params;
+                        }
                     }
+
                 } else if (m[i].cmd[1] === "time") {
                     keyframe = m[i].params;
                     keyframes[keyframe] = [];
-                } else if ((m[i].cmd[1] === "source") && (keyframe !== null)) { 
+                } else if ((m[i].cmd[1] === "source") && (keyframe !== null)) {
                     // ignore the commands until the first keyframe appears
                     var obj = m[i].cmd[2];
                     var cmd = m[i].cmd[3];
@@ -14620,7 +14666,7 @@ SceneReader.prototype = {
                     if (cmd === "track_mapping"){
                         if ((params.startsWith("bed_")) && (obj in audiobeds ===  false)){
                             audiobeds[obj] = params;
-                        } else if ((params.startsWith("bed_") === false) && (obj in audioURLs === false)) { 
+                        } else if ((params.startsWith("bed_") === false) && (obj in audioURLs === false)) {
                             audioURLs[obj] = params;
                             if (keyframe in extraObjects ===  false){
                                 extraObjects[keyframe] = [];
@@ -14638,7 +14684,7 @@ SceneReader.prototype = {
                         }
                         if (groups[keyframe][params].indexOf(obj) === -1){
                             groups[keyframe][params].push(obj)  // == groups.keyframe.params.push(obj)
-                            log.debug("Adding " + obj + " to group " + params + " at keyframe " + keyframe);
+                            console.debug("Adding " + obj + " to group " + params + " at keyframe " + keyframe);
                         }
                     }
                     var triplet = {};
@@ -14649,10 +14695,10 @@ SceneReader.prototype = {
                     triplet.cmd = cmd;
                     triplet.params = m[i].params;
                     keyframes[keyframe].push(triplet);
-                } 
+                }
             }
         }
-        return [keyframes, audioURLs, sceneInfo, groups, audiobeds, extraObjects];
+        return [keyframes, audioURLs, sceneInfo, groups, audiobeds, extraObjects, interactiveInfo];
     },
 
     _parseFloatArray: function(array){
@@ -14671,5 +14717,5 @@ SceneReader.prototype = {
 
 module.exports = SceneReader;
 
-},{"jquery":2,"loglevel":3}]},{},[1])
+},{"jquery":2}]},{},[1])
 //# sourceMappingURL=bogJS-latest.js.map

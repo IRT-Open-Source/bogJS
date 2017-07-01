@@ -1,8 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "5fdba55 v0.3.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Nov 14 2016 17:37:02 GMT+0100 (CET)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "7ca6801 v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Sat Jul 01 2017 00:03:53 GMT+0200 (CEST)";
 
 
 // making the objects globally available
@@ -25910,9 +25910,7 @@ window.$ = require('jquery');
 require('jquery-ui-browserify');
 require('jquery-mousewheel')($);
 require('jquery.transit');
-var UIManager = function (om, url, loglevel) {
-    var loglevel = loglevel || log.levels.DEBUG;
-    log.setLevel(loglevel);
+var UIManager = function (om, url) {
     this.om = om || new ObjectManager(url);
     this.bg = '';
     this.listener = '';
@@ -25932,7 +25930,7 @@ var UIManager = function (om, url, loglevel) {
 };
 UIManager.prototype = {
     start: function () {
-        if (this.om.start() == true) {
+        if (this.om.start() === true) {
             var roomsize = [
                 this.om.roomDimensions[0] * this._resizeFactor,
                 this.om.roomDimensions[1] * this._resizeFactor
@@ -25960,10 +25958,11 @@ UIManager.prototype = {
             });
             $(this.listener).mousewheel(function (event, delta) {
                 var angle = that._xyz2angle(that.om.getListenerOrientation());
+                var new_angle = angle;
                 if (delta < 0) {
-                    var new_angle = angle - 5;
+                    new_angle = angle - 5;
                 } else {
-                    var new_angle = angle + 5;
+                    new_angle = angle + 5;
                 }
                 that._setListenerOrientation(new_angle);
                 $('.irt_listener').css({ rotate: new_angle });
@@ -25983,9 +25982,9 @@ UIManager.prototype = {
         return true;
     },
     toggleInteractive: function () {
-        if (this._interactive == false) {
+        if (this._interactive === false) {
             this._enableInteractive();
-        } else if (this._interactive == true) {
+        } else if (this._interactive === true) {
             this._disableInteractive();
         }
     },
@@ -26016,7 +26015,7 @@ UIManager.prototype = {
                 }
             }.bind(this), false);
         } else {
-            log.info('Not supported on your device or browser.  Sorry.');
+            console.info('Not supported on your device or browser.  Sorry.');
         }
     },
     onOrientationChange: function () {
@@ -26055,7 +26054,7 @@ UIManager.prototype = {
         } else {
             $('#' + obj).hide();
         }
-        log.debug('Setting state of object ' + obj + ' to ' + bool);
+        console.debug('Setting state of object ' + obj + ' to ' + bool);
     },
     _enableInteractive: function () {
         for (var key in this.om.objects) {
@@ -26088,17 +26087,17 @@ UIManager.prototype = {
             $('#' + key).dblclick(function (event, ui) {
                 if (that._soloed !== event.target.id) {
                     for (var key in that.om.objects) {
-                        log.debug('Muting ' + key);
+                        console.debug('Muting ' + key);
                         $('#' + key).addClass('irt_object_disabled');
                         that.om.objects[key].setStatus(false);
                     }
                     $('#' + event.target.id).removeClass('irt_object_disabled');
-                    log.debug('Unmuting ' + event.target.id);
+                    console.debug('Unmuting ' + event.target.id);
                     that.om.objects[event.target.id].setStatus(true);
                     that._soloed = event.target.id;
                 } else {
                     for (var obj in that.om.objects) {
-                        log.debug('Unmuting ' + obj);
+                        console.debug('Unmuting ' + obj);
                         $('#' + obj).removeClass('irt_object_disabled');
                         that.om.objects[obj].setStatus(true);
                     }
@@ -26129,7 +26128,7 @@ UIManager.prototype = {
                         0,
                         -1 * xy[1]
                     ]);
-                    log.debug('Drag event position: ' + topleft);
+                    console.debug('Drag event position: ' + topleft);
                 }, 50)
             });
             if (!this.om.objects[key].getStatus()) {
@@ -26155,7 +26154,7 @@ UIManager.prototype = {
             'top': topleft[0],
             'left': topleft[1]
         });
-        log.info('New listener position: ' + topleft);
+        console.info('New listener position: ' + topleft);
         var that = this;
         $(this.listener).draggable({
             drag: function (event, ui) {
@@ -26172,7 +26171,7 @@ UIManager.prototype = {
         var x = 10 * Math.sin(angle * (Math.PI / 180));
         var y = 0;
         var z = -10 * Math.cos(angle * (Math.PI / 180));
-        log.info('Set angle ' + angle + ' to new listener orientation ' + x + ' ' + y + ' ' + z);
+        console.info('Set angle ' + angle + ' to new listener orientation ' + x + ' ' + y + ' ' + z);
         this.om.setListenerOrientation(x, y, z);
     },
     _changeUIObjectPosition: function (id, xy) {
@@ -26181,7 +26180,7 @@ UIManager.prototype = {
             'top': topleft[0],
             'left': topleft[1]
         });
-        log.debug('New position of ' + id + ' is: ' + topleft + '(xy: ' + xy + ')');
+        console.debug('New position of ' + id + ' is: ' + topleft + '(xy: ' + xy + ')');
     },
     _setObjPos: function (id, topleft) {
         var xy = this._topleft2xy(topleft);
