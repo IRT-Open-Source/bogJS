@@ -866,6 +866,33 @@ ObjectManager.prototype = {
         this.objects[active_obj].setStatus(true);
     },
 
+    setInteractiveGain: function(groupName, dBValue){
+        var minLogGain = parseFloat(this.interactiveInfo.gain[groupName].range[0]);
+        var maxLogGain = parseFloat(this.interactiveInfo.gain[groupName].range[1]);
+        var gainValue;
+        if (parseFloat(dBValue) > maxLogGain) {
+            gainValue = maxLogGain;
+        } else if(parseFloat(dBValue) < minLogGain) {
+            gainValue = minLogGain;
+        } else {
+            gainValue = dBValue;
+        }
+        // Use an equal-power crossfading curve:
+        var range = Math.abs(minLogGain) * 0.5 + maxLogGain * 0.5;
+        var gainGroup = Math.pow(10, (Math.sqrt((range + gainValue) * 0.5) / 20));
+        var gainOther = Math.pow(10, (Math.sqrt((range - gainValue) * 0.5) / 20));
+        var groupObjects = this.interactiveInfo.gain[groupName].objects;
+        for (var obj of groupObjects){
+            this.objects[obj].setInteractiveGain(gainGroup);
+        }
+        // find other objects
+        var otherObjects = _.difference(Object.keys(this.objects), groupObjects);
+        for (var oth of otherObjects){
+            this.objects[oth].setInteractiveGain(gainOther);
+        }
+        console.debug("Set group " + groupName + " gain to " + gainGroup + " and other objects to " + gainOther);
+    },
+
     /**
      * @private
      * As Chrome (FF works) does not automatically use the new paramters of

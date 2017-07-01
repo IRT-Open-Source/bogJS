@@ -50,6 +50,7 @@ var ObjectController = function(ctx, sourceNode, targetNode=ctx.destination) {
 
     this._state = false;
     this.stateNode = new GainController(ctx, this.panner);
+    this.interactiveGain = new GainController(ctx, this.stateNode.gainNode);
 
     this.setAudio(sourceNode);
     this.panner.connect(targetNode);
@@ -102,6 +103,18 @@ ObjectController.prototype = {
     },
 
     /**
+     * Sets gain value of {@link
+     * module:bogJS~GainController#gainNode|GainController.gainNode}
+     * Separate GainNode to be used for interactive Gain control, aka
+     * cross-fading between one group and another.
+     * @param {Float} gain - Must be between 0.0 and 1.0
+     */
+    setInteractiveGain: function(gain){
+        this.interactiveGain.setGain(gain);
+        this._interactiveGain = gain;
+    },
+
+    /**
      * Returns current object state
      * @return {Boolean} status
      */
@@ -119,24 +132,16 @@ ObjectController.prototype = {
      * value shall be linear faded to passed gain value from passed time on. If
      * false, the gain value will be applied immediately.
      */
-    setGain: function(gain, time, interpolation){
-        var time = time || "now";
-        var interpolation = interpolation || false;
-
-        if ((gain >= 0.0) && (gain <= 1.0)){
-            if (time === "now") {
-                this.audio.setGain(gain);
-                this.gain = gain;
-            }
-            else if ((time !== "now") && (interpolation === false)) {
-                this.audio.gainNode.gain.setValueAtTime(gain, time);
-            }
-            else if ((time !== "now") && (interpolation !== false)){
-                this.audio.gainNode.gain.linearRampToValueAtTime(gain, time);
-            }
+    setGain: function(gain, time="now", interpolation=false){
+        if (time === "now") {
+            this.audio.setGain(gain);
+            this.gain = gain;
         }
-        else {
-            log.error("Gain values must be between 0 and 1");
+        else if ((time !== "now") && (interpolation === false)) {
+            this.audio.gainNode.gain.setValueAtTime(gain, time);
+        }
+        else if ((time !== "now") && (interpolation !== false)){
+            this.audio.gainNode.gain.linearRampToValueAtTime(gain, time);
         }
     },
 
@@ -242,10 +247,10 @@ ObjectController.prototype = {
             // FIXME: AudioData() class should also have a connect method.
             // Better would be to use derived class mechanisms.
             if(this.audio.connect) {
-                this.audio.connect(this.stateNode.gainNode);
+                this.audio.connect(this.interactiveGain.gainNode);
             }
             else {
-                this.audio.reconnect(this.stateNode.gainNode);
+                this.audio.reconnect(this.interactiveGain.gainNode);
             }
         }
     },
