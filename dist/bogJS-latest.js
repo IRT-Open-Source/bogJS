@@ -1,12 +1,12 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
+"use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "10bb0cb v0.3.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Fri Jun 30 2017 22:16:39 GMT+0200 (CEST)";
-
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "2cad7e1 v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Jul 03 2017 17:59:46 GMT+0200 (CEST)";
 
 // making the objects globally available
-window.$ = require('jquery');  // avoids that we use different jquery instances..
+window.$ = require('jquery'); // avoids that we use different jquery instances..
 window.jQuery = $;
 window.jquery = $;
 window.ChannelOrderTest = require('./src/channelorder_test');
@@ -21,7 +21,7 @@ window.SceneReader = require('./src/scene_reader');
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./src/channelorder_test":8,"./src/gain_controller":9,"./src/html5_player/core":10,"./src/media_controller":11,"./src/object":12,"./src/object_manager":13,"./src/scene_reader":14,"jquery":2}],2:[function(require,module,exports){
+},{"./src/channelorder_test":7,"./src/gain_controller":8,"./src/html5_player/core":9,"./src/media_controller":10,"./src/object":11,"./src/object_manager":12,"./src/scene_reader":13,"jquery":2}],2:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.2.4
  * http://jquery.com/
@@ -9838,231 +9838,6 @@ return jQuery;
 }));
 
 },{}],3:[function(require,module,exports){
-/*
-* loglevel - https://github.com/pimterry/loglevel
-*
-* Copyright (c) 2013 Tim Perry
-* Licensed under the MIT license.
-*/
-(function (root, definition) {
-    "use strict";
-    if (typeof define === 'function' && define.amd) {
-        define(definition);
-    } else if (typeof module === 'object' && module.exports) {
-        module.exports = definition();
-    } else {
-        root.log = definition();
-    }
-}(this, function () {
-    "use strict";
-    var noop = function() {};
-    var undefinedType = "undefined";
-
-    function realMethod(methodName) {
-        if (typeof console === undefinedType) {
-            return false; // We can't build a real method without a console to log to
-        } else if (console[methodName] !== undefined) {
-            return bindMethod(console, methodName);
-        } else if (console.log !== undefined) {
-            return bindMethod(console, 'log');
-        } else {
-            return noop;
-        }
-    }
-
-    function bindMethod(obj, methodName) {
-        var method = obj[methodName];
-        if (typeof method.bind === 'function') {
-            return method.bind(obj);
-        } else {
-            try {
-                return Function.prototype.bind.call(method, obj);
-            } catch (e) {
-                // Missing bind shim or IE8 + Modernizr, fallback to wrapping
-                return function() {
-                    return Function.prototype.apply.apply(method, [obj, arguments]);
-                };
-            }
-        }
-    }
-
-    // these private functions always need `this` to be set properly
-
-    function enableLoggingWhenConsoleArrives(methodName, level, loggerName) {
-        return function () {
-            if (typeof console !== undefinedType) {
-                replaceLoggingMethods.call(this, level, loggerName);
-                this[methodName].apply(this, arguments);
-            }
-        };
-    }
-
-    function replaceLoggingMethods(level, loggerName) {
-        /*jshint validthis:true */
-        for (var i = 0; i < logMethods.length; i++) {
-            var methodName = logMethods[i];
-            this[methodName] = (i < level) ?
-                noop :
-                this.methodFactory(methodName, level, loggerName);
-        }
-    }
-
-    function defaultMethodFactory(methodName, level, loggerName) {
-        /*jshint validthis:true */
-        return realMethod(methodName) ||
-               enableLoggingWhenConsoleArrives.apply(this, arguments);
-    }
-
-    var logMethods = [
-        "trace",
-        "debug",
-        "info",
-        "warn",
-        "error"
-    ];
-
-    function Logger(name, defaultLevel, factory) {
-      var self = this;
-      var currentLevel;
-      var storageKey = "loglevel";
-      if (name) {
-        storageKey += ":" + name;
-      }
-
-      function persistLevelIfPossible(levelNum) {
-          var levelName = (logMethods[levelNum] || 'silent').toUpperCase();
-
-          // Use localStorage if available
-          try {
-              window.localStorage[storageKey] = levelName;
-              return;
-          } catch (ignore) {}
-
-          // Use session cookie as fallback
-          try {
-              window.document.cookie =
-                encodeURIComponent(storageKey) + "=" + levelName + ";";
-          } catch (ignore) {}
-      }
-
-      function getPersistedLevel() {
-          var storedLevel;
-
-          try {
-              storedLevel = window.localStorage[storageKey];
-          } catch (ignore) {}
-
-          if (typeof storedLevel === undefinedType) {
-              try {
-                  var cookie = window.document.cookie;
-                  var location = cookie.indexOf(
-                      encodeURIComponent(storageKey) + "=");
-                  if (location) {
-                      storedLevel = /^([^;]+)/.exec(cookie.slice(location))[1];
-                  }
-              } catch (ignore) {}
-          }
-
-          // If the stored level is not valid, treat it as if nothing was stored.
-          if (self.levels[storedLevel] === undefined) {
-              storedLevel = undefined;
-          }
-
-          return storedLevel;
-      }
-
-      /*
-       *
-       * Public API
-       *
-       */
-
-      self.levels = { "TRACE": 0, "DEBUG": 1, "INFO": 2, "WARN": 3,
-          "ERROR": 4, "SILENT": 5};
-
-      self.methodFactory = factory || defaultMethodFactory;
-
-      self.getLevel = function () {
-          return currentLevel;
-      };
-
-      self.setLevel = function (level, persist) {
-          if (typeof level === "string" && self.levels[level.toUpperCase()] !== undefined) {
-              level = self.levels[level.toUpperCase()];
-          }
-          if (typeof level === "number" && level >= 0 && level <= self.levels.SILENT) {
-              currentLevel = level;
-              if (persist !== false) {  // defaults to true
-                  persistLevelIfPossible(level);
-              }
-              replaceLoggingMethods.call(self, level, name);
-              if (typeof console === undefinedType && level < self.levels.SILENT) {
-                  return "No console available for logging";
-              }
-          } else {
-              throw "log.setLevel() called with invalid level: " + level;
-          }
-      };
-
-      self.setDefaultLevel = function (level) {
-          if (!getPersistedLevel()) {
-              self.setLevel(level, false);
-          }
-      };
-
-      self.enableAll = function(persist) {
-          self.setLevel(self.levels.TRACE, persist);
-      };
-
-      self.disableAll = function(persist) {
-          self.setLevel(self.levels.SILENT, persist);
-      };
-
-      // Initialize with the right level
-      var initialLevel = getPersistedLevel();
-      if (initialLevel == null) {
-          initialLevel = defaultLevel == null ? "WARN" : defaultLevel;
-      }
-      self.setLevel(initialLevel, false);
-    }
-
-    /*
-     *
-     * Package-level API
-     *
-     */
-
-    var defaultLogger = new Logger();
-
-    var _loggersByName = {};
-    defaultLogger.getLogger = function getLogger(name) {
-        if (typeof name !== "string" || name === "") {
-          throw new TypeError("You must supply a name when creating a logger.");
-        }
-
-        var logger = _loggersByName[name];
-        if (!logger) {
-          logger = _loggersByName[name] = new Logger(
-            name, defaultLogger.getLevel(), defaultLogger.methodFactory);
-        }
-        return logger;
-    };
-
-    // Grab the current global log variable in case of overwrite
-    var _log = (typeof window !== undefinedType) ? window.log : undefined;
-    defaultLogger.noConflict = function() {
-        if (typeof window !== undefinedType &&
-               window.log === defaultLogger) {
-            window.log = _log;
-        }
-
-        return defaultLogger;
-    };
-
-    return defaultLogger;
-}));
-
-},{}],4:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -10233,6 +10008,10 @@ process.off = noop;
 process.removeListener = noop;
 process.removeAllListeners = noop;
 process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
@@ -10244,7 +10023,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -11794,13 +11573,13 @@ process.umask = function() { return 0; };
   }
 }.call(this));
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var WAAClock = require('./lib/WAAClock')
 
 module.exports = WAAClock
 if (typeof window !== 'undefined') window.WAAClock = WAAClock
 
-},{"./lib/WAAClock":7}],7:[function(require,module,exports){
+},{"./lib/WAAClock":6}],6:[function(require,module,exports){
 (function (process){
 var isBrowser = (typeof window !== 'undefined')
 
@@ -12038,7 +11817,9 @@ WAAClock.prototype._relTime = function(absTime) {
 }
 }).call(this,require('_process'))
 
-},{"_process":4}],8:[function(require,module,exports){
+},{"_process":3}],7:[function(require,module,exports){
+'use strict';
+
 /*jshint esversion: 6 */
 /**
  * @file channelorder_test.js
@@ -12049,10 +11830,8 @@ WAAClock.prototype._relTime = function(absTime) {
  * @module bogJS
  */
 
-
 window.$ = require('jquery');
 var _ = require('underscore');
-
 
 /**
  * GainController
@@ -12078,7 +11857,9 @@ var _ = require('underscore');
  * @param {String} [root="signals/order"] - path to test encoded files
  * @fires module:bogJS~ChannelOrderTest#order_ready
  */
-var ChannelOrderTest = function(container, tracks, ctx, root="signals/order/"){
+var ChannelOrderTest = function ChannelOrderTest(container, tracks, ctx) {
+    var root = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "signals/order/";
+
     if (typeof ctx === 'undefined') {
         if (typeof AudioContext !== 'undefined') {
             var ctx = new AudioContext();
@@ -12095,20 +11876,20 @@ var ChannelOrderTest = function(container, tracks, ctx, root="signals/order/"){
     this._splitter = this.ctx.createChannelSplitter(this._tracks);
     this.analysers = [];
 
-    for (var i = 0; i < this._tracks; i++){
+    for (var i = 0; i < this._tracks; i++) {
         this.analysers[i] = this.ctx.createAnalyser();
-        this.analysers[i].fftSize = 2048;  // "hard-coded" due to Safari -> analyser chrashes if fftSize value is greater than 2048
+        this.analysers[i].fftSize = 2048; // "hard-coded" due to Safari -> analyser chrashes if fftSize value is greater than 2048
         this._splitter.connect(this.analysers[i], i);
         //this.analysers[i].connect(this.ctx.destination);
     }
     //var root = root || "http://lab.irt.de/demos/order/";
-    if (container === "webm"){   // we assume opus if webm is used
+    if (container === "webm") {
+        // we assume opus if webm is used
         container = "opus";
     }
-    var url = root+tracks+"chs."+container;
+    var url = root + tracks + "chs." + container;
     this._loadSound(url);
 };
-
 
 ChannelOrderTest.prototype = {
     /**
@@ -12117,7 +11898,7 @@ ChannelOrderTest.prototype = {
      * @protected
      * @param {string} url - URL
      */
-    _loadSound: function(url){
+    _loadSound: function _loadSound(url) {
         this.audio = document.createElement('audio');
         this.audio.src = url;
         this.audio.loop = false;
@@ -12127,13 +11908,13 @@ ChannelOrderTest.prototype = {
         this.audio.play();
         var last_unique = [];
         this._counter = 0;
-        this.audio.onplay = function(){
+        this.audio.onplay = function () {
             var order = this.testChs();
             var unique = _.unique(order);
 
             // the returned order should be identical for two conscutive calls
             // to make sure we have a reliable result
-            if ((unique.length === this._tracks) && (_.isEqual(last_unique, unique))) {
+            if (unique.length === this._tracks && _.isEqual(last_unique, unique)) {
                 console.info('Channel order detected: ' + order);
 
                 /**
@@ -12145,12 +11926,12 @@ ChannelOrderTest.prototype = {
                  */
                 $(this).triggerHandler('order_ready', [order]);
                 this.audio.pause();
-            } else if (unique.length === this._tracks){
+            } else if (unique.length === this._tracks) {
                 last_unique = unique;
             }
 
             console.debug("Channel order not yet detected. Iteration:  " + this._counter);
-            if (this._counter >= 5){
+            if (this._counter >= 5) {
                 console.warn("Channel order not detectable. Stop trying and trigger default values.");
                 order = _.range(this._tracks);
                 $(this).triggerHandler('order_ready', [order]);
@@ -12158,7 +11939,7 @@ ChannelOrderTest.prototype = {
             }
             this._counter += 1;
         }.bind(this, last_unique);
-        this.audio.onended = function(){
+        this.audio.onended = function () {
             this.audio.play();
         }.bind(this);
     },
@@ -12167,10 +11948,10 @@ ChannelOrderTest.prototype = {
      * Save frequency bins to arrays for later analysis
      * @protected
      */
-    _getFreqData: function(){
+    _getFreqData: function _getFreqData() {
         this.audio.play();
         var freqBins = [];
-        for (var i = 0; i < this._tracks; i++){
+        for (var i = 0; i < this._tracks; i++) {
             // Float32Array should be the same length as the frequencyBinCount
             freqBins[i] = new Float32Array(this.analysers[i].frequencyBinCount);
             // fill the Float32Array with data returned from getFloatFrequencyData()
@@ -12185,19 +11966,21 @@ ChannelOrderTest.prototype = {
      * @returns {Number[]}  Array containing the detected. e.g. [0, 3, 1, 2]
      * channel order
      */
-    testChs: function(){
+    testChs: function testChs() {
         this._getFreqData();
         var indices = [];
-        for (var i = 0; i < this.freqBins.length; i++){
+        for (var i = 0; i < this.freqBins.length; i++) {
             var idx = _.indexOf(this.freqBins[i], _.max(this.freqBins[i]));
             indices[i] = idx;
         }
         console.debug("Decoded indices: " + indices);
         // to avoid the array is mutated and numerical sorted
-        var sorted_indices = indices.concat().sort(function(a, b){return a-b;});
+        var sorted_indices = indices.concat().sort(function (a, b) {
+            return a - b;
+        });
         console.debug("Sorted indices: " + sorted_indices);
         var normalized_indices = [];
-        for (var i = 0; i < indices.length; i++){
+        for (var i = 0; i < indices.length; i++) {
             normalized_indices[i] = _.indexOf(sorted_indices, indices[i]);
         }
         return normalized_indices;
@@ -12206,7 +11989,9 @@ ChannelOrderTest.prototype = {
 
 module.exports = ChannelOrderTest;
 
-},{"jquery":2,"underscore":5}],9:[function(require,module,exports){
+},{"jquery":2,"underscore":4}],8:[function(require,module,exports){
+"use strict";
+
 /*jshint esversion: 6 */
 /**
  * @file media_controller.js
@@ -12220,7 +12005,6 @@ module.exports = ChannelOrderTest;
 
 window.$ = require('jquery');
 
-
 /**
  * GainController
  * @constructor
@@ -12229,7 +12013,9 @@ window.$ = require('jquery');
  * @param [targetNode=ctx.destination] - Web Audio API node to which the
  * output of the GainController shall be connected to.
  */
-var GainController = function(ctx, targetNode=ctx.destination){
+var GainController = function GainController(ctx) {
+    var targetNode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ctx.destination;
+
     this._gain = 1;
     this.gainNode = ctx.createGain();
 
@@ -12250,7 +12036,7 @@ GainController.prototype = {
      * Mutes the node object
      *
      */
-    mute: function(){
+    mute: function mute() {
         this.setGain(0);
     },
 
@@ -12258,7 +12044,7 @@ GainController.prototype = {
      * Unmutes node object
      *
      */
-    unmute: function(){
+    unmute: function unmute() {
         this.setGain(1);
     },
 
@@ -12267,7 +12053,7 @@ GainController.prototype = {
      *
      * @param {Float} val - Values between 0 and 1
      */
-    setGain: function(val){
+    setGain: function setGain(val) {
         this.gainNode.gain.value = val;
         this._gain = this.getGain();
     },
@@ -12277,7 +12063,7 @@ GainController.prototype = {
      *
      * @returns {Float} gain - Float value between 0 and 1
      */
-    getGain: function(){
+    getGain: function getGain() {
         return this.gainNode.gain.value;
     },
 
@@ -12288,7 +12074,7 @@ GainController.prototype = {
     * @param {(Object|Object[])} nodes - Single of array of AudioNodes to which
     * the {@link MediaElementController} instance shall be reconnected.
     */
-    reconnect: function(nodes){
+    reconnect: function reconnect(nodes) {
         this.disconnect();
         this.connect(nodes);
     },
@@ -12299,12 +12085,14 @@ GainController.prototype = {
      * @param {(Object|Object[])} nodes - one or multple Web Audio API nodes to
      * which the output of the GainController instance shall be connected to.
      */
-    connect: function(nodes) {
+    connect: function connect(nodes) {
         console.debug("Connecting GainController to " + nodes);
-        if (Object.prototype.toString.call(nodes) != "[object Array]"){          // == single Node
+        if (Object.prototype.toString.call(nodes) != "[object Array]") {
+            // == single Node
             this.gainNode.connect(nodes);
-        } else {                                          // == array of Nodes
-            for (var i=0; i < nodes.length; i++){
+        } else {
+            // == array of Nodes
+            for (var i = 0; i < nodes.length; i++) {
                 this.gainNode.connect(nodes[i]);
             }
         }
@@ -12314,19 +12102,21 @@ GainController.prototype = {
     * This method will disconnect output of the {@link GainController} instance from
     * a given node or all connected nodes if node is not given/undefined.
     */
-    disconnect: function(node){
+    disconnect: function disconnect(node) {
         //console.debug("Disconnecting ", this, " from ", node);
         this.gainNode.disconnect(node);
     },
 
-    setHighpassFreq: function(freq){
+    setHighpassFreq: function setHighpassFreq(freq) {
         //this.highpass.frequency.value = freq;
     }
 };
 
 module.exports = GainController;
 
-},{"jquery":2}],10:[function(require,module,exports){
+},{"jquery":2}],9:[function(require,module,exports){
+"use strict";
+
 /**
  * @file irtPlayer_new.js
  * @author Michael Weitnauer: {@link weitnauer@irt.de}
@@ -12368,9 +12158,7 @@ module.exports = GainController;
  *
  */
 
-var log = require('loglevel');
 window.$ = require('jquery');
-
 
 /**
  * Represents AudioData class which has all the logic to control an
@@ -12390,12 +12178,12 @@ window.$ = require('jquery');
  * @fires module:irtPlayer~AudioData#audio_loaded
  * @fires module:irtPlayer~AudioData#audio_ended
  */
-var AudioData = function(ctx, url, targetNode, checkSupportFlag) {
+var AudioData = function AudioData(ctx, url, targetNode, checkSupportFlag) {
     /** @protected
      * @var {boolean} */
     this.canplay = false;
     var checkSupportFlag = checkSupportFlag || true;
-    if (checkSupportFlag == true){
+    if (checkSupportFlag == true) {
         var url = this._checkExtension(url);
     }
     /** @var {Object.<AudioContext>} */
@@ -12413,8 +12201,8 @@ var AudioData = function(ctx, url, targetNode, checkSupportFlag) {
     this.gainNode = this.ctx.createGain();
     this.gain = this.getGain();
     var targetNode = targetNode || this.ctx.destination;
-    this.gainNode.connect(targetNode);  // FF either refuses to break this connection or simply displays a no more existing connection..
-}
+    this.gainNode.connect(targetNode); // FF either refuses to break this connection or simply displays a no more existing connection..
+};
 
 AudioData.prototype = {
 
@@ -12424,7 +12212,7 @@ AudioData.prototype = {
      *
      * @protected
      */
-    _initBuffer: function(){
+    _initBuffer: function _initBuffer() {
         this.audio = this.ctx.createBufferSource();
         this.audio.loop = this._looping;
         //this.audio.loop = false;  // workaround to compensate Chrome behavior. see comment in play()
@@ -12447,7 +12235,7 @@ AudioData.prototype = {
      *
      * @protected
      */
-    _onendedHandler: function(){
+    _onendedHandler: function _onendedHandler() {
         //console.debug("Audio buffer has ended!");
         this._playing = false;
         //this._startOffset = 0;
@@ -12459,7 +12247,7 @@ AudioData.prototype = {
         $(this).triggerHandler("audio_ended");
     },
 
-    load: function(){
+    load: function load() {
         this._loadSound(this.url);
     },
 
@@ -12469,12 +12257,13 @@ AudioData.prototype = {
     * @param {number} [pos] - Position from which the playback shall start
     * (optional)
     */
-    play: function(pos){
-        if ((this._playing == false) && (this.canplay)){
+    play: function play(pos) {
+        if (this._playing == false && this.canplay) {
             this._initBuffer();
             this._startTime = this.audio.context.currentTime;
             console.debug("Start time: " + this._startTime);
-            if (typeof pos != 'number'){        // detection with _.isNumber() could be more robust
+            if (typeof pos != 'number') {
+                // detection with _.isNumber() could be more robust
                 var buffer_duration = this._buffer.duration;
                 var offset = (this._rangeStart + this._startOffset) % buffer_duration;
                 var duration = this._rangeEnd - offset;
@@ -12506,28 +12295,27 @@ AudioData.prototype = {
      * AudioData#_playing} flag is true.
      *
      */
-    pause: function(){
-        if (this._playing == true){
+    pause: function pause() {
+        if (this._playing == true) {
             this.audio.stop(0);
             // Measure how much time passed since the last pause.
             this._startOffset += this.audio.context.currentTime - this._startTime;
             this._playing = false;
-            console.debug("Start offset: "+ this._startOffset);
+            console.debug("Start offset: " + this._startOffset);
         }
     },
-
 
     /**
      * Stops playback - if method is called during the playback
      * is stopped, the thrown error will be catched.
      */
-    stop: function(){
+    stop: function stop() {
         try {
             this.audio.stop(0);
             this._startOffset = 0;
             this._playing = false;
         } catch (err) {
-            log.warn("Can't stop audio.. " + err);
+            console.warn("Can't stop audio.. " + err);
         }
     },
 
@@ -12536,13 +12324,12 @@ AudioData.prototype = {
      *
      * @param {float} gain - Value between 0.0 and 1.0
      */
-    setGain: function(gain){
-        if ((gain >= 0.0) && (gain <= 1.0)){
+    setGain: function setGain(gain) {
+        if (gain >= 0.0 && gain <= 1.0) {
             this.gainNode.gain.value = gain;
-            this.gain = this.gainNode.gain.value;  // avoids that we accept uncompatible values
-        }
-        else {
-            log.warn("Gain values must be between 0 and 1");
+            this.gain = this.gainNode.gain.value; // avoids that we accept uncompatible values
+        } else {
+            console.warn("Gain values must be between 0 and 1");
         }
     },
 
@@ -12551,15 +12338,15 @@ AudioData.prototype = {
      *
      * @return {float} value - Float gain value
      */
-    getGain: function(){
-        return this.gainNode.gain.value;  // or do we trust in this.gain ??
+    getGain: function getGain() {
+        return this.gainNode.gain.value; // or do we trust in this.gain ??
     },
 
     /**
      * Disables / enables the loop of the {@link AudioData} instance
      */
-    toggleLoop: function() {
-        if (this._looping == false){
+    toggleLoop: function toggleLoop() {
+        if (this._looping == false) {
             this._looping = true;
         } else {
             this._looping = false;
@@ -12569,21 +12356,21 @@ AudioData.prototype = {
             this.audio.loop = this._looping;
             //this.play();
         } catch (err) {
-            log.warn("Can't set loop state: " + err);
+            console.warn("Can't set loop state: " + err);
         }
     },
 
     /**
      * Disables / enables the loop of the {@link AudioData} instance
      */
-    setLoopState: function(bool) {
+    setLoopState: function setLoopState(bool) {
         this._looping = bool;
         try {
             //this.pause();
             this.audio.loop = this._looping;
             //this.play();
         } catch (err) {
-            log.warn("Can't set loop state: " + err);
+            console.warn("Can't set loop state: " + err);
         }
     },
 
@@ -12593,7 +12380,7 @@ AudioData.prototype = {
      * @param {float} pos  - Start playback always at passed
      * position
      */
-    setRangeStart: function(pos){
+    setRangeStart: function setRangeStart(pos) {
         pos = parseFloat(pos);
         if (pos >= 0) {
             pos = pos;
@@ -12605,7 +12392,7 @@ AudioData.prototype = {
             this.audio.loopStart = this._rangeStart;
             console.debug("Loop start: " + pos);
         } catch (err) {
-            log.warn("Can't set loop start yet.." + err);
+            console.warn("Can't set loop start yet.." + err);
         }
     },
 
@@ -12615,7 +12402,7 @@ AudioData.prototype = {
      * @param {float} pos  - Playback end always at passed
      * position
      */
-    setRangeEnd: function(pos){
+    setRangeEnd: function setRangeEnd(pos) {
         pos = parseFloat(pos);
         if (pos <= this._buffer.duration) {
             pos = pos;
@@ -12626,22 +12413,22 @@ AudioData.prototype = {
         try {
             this.audio.loopEnd = this._rangeEnd;
             console.debug("Loop end: " + pos);
-        } catch (err){
-            log.warn("Can't set loop start yet.." + err);
+        } catch (err) {
+            console.warn("Can't set loop start yet.." + err);
         }
     },
 
     /**
      * Mutes {@link AudioData} instance
      */
-    mute: function(){
+    mute: function mute() {
         this.setGain(0.0);
     },
 
     /**
      * Unmutes {@link AudioData} instance
      */
-    unmute: function(){
+    unmute: function unmute() {
         this.setGain(1.0);
     },
 
@@ -12651,8 +12438,8 @@ AudioData.prototype = {
      * @param {float} pos  - Must be between 0 and {@link
      * AudioData._rangeEnd}
      */
-    setTime: function(pos){
-        if ((pos >= 0) && (pos <= this._rangeEnd)){
+    setTime: function setTime(pos) {
+        if (pos >= 0 && pos <= this._rangeEnd) {
             this.stop();
             this.play(pos);
         }
@@ -12663,7 +12450,7 @@ AudioData.prototype = {
      *
      * @return {number} value - Current playback position
      */
-    getTime: function(){
+    getTime: function getTime() {
         if (this._playing) {
             return this.audio.context.currentTime - this._startTime + this._startOffset;
         } else {
@@ -12678,13 +12465,14 @@ AudioData.prototype = {
     * @param {...Object} nodes - Variable number of AudioNodes to which
     * the {@link AudioData} instance shall be reconnected.
     */
-    reconnect: function(nodes){
+    reconnect: function reconnect(nodes) {
         this.disconnect();
-        if (Object.prototype.toString.call(nodes) != "[object Array]"){          // == single Node
+        if (Object.prototype.toString.call(nodes) != "[object Array]") {
+            // == single Node
             this.gainNode.connect(nodes);
-        }
-        else {                                          // == array of Nodes
-            for (var i=0; i < nodes.length; i++){
+        } else {
+            // == array of Nodes
+            for (var i = 0; i < nodes.length; i++) {
                 this.gainNode.connect(nodes[i]);
             }
         }
@@ -12695,7 +12483,7 @@ AudioData.prototype = {
     * all connected nodes (afterwards). Should be mostly
     * ctx.destination.
     */
-    disconnect: function(){
+    disconnect: function disconnect() {
         this.gainNode.disconnect();
     },
 
@@ -12710,16 +12498,15 @@ AudioData.prototype = {
      * @return {string} src - URL including file type extension which should be
      * compatible with browser
      */
-    _checkExtension: function(url){
+    _checkExtension: function _checkExtension(url) {
         var supports = this._checkSupport();
 
-        var re = /\.[0-9a-z]{3,4}$/i;   // strips the file extension (must be 3 or 4 characters)
+        var re = /\.[0-9a-z]{3,4}$/i; // strips the file extension (must be 3 or 4 characters)
         var ext = re.exec(url);
-        if (ext == null){
+        if (ext == null) {
             if (supports.indexOf(".opus") > -1) {
                 var src = url + ".opus";
-            }
-            else if (supports.indexOf(".mp4") > -1) {
+            } else if (supports.indexOf(".mp4") > -1) {
                 var src = url + ".mp4";
             }
             /*
@@ -12727,23 +12514,21 @@ AudioData.prototype = {
                 var src = url + ".m4a";
             }*/
             else if (supports.indexOf(".ogg") > -1) {
-                var src = url + ".ogg";
-            }
-            else if (supports.indexOf(".mp3") > -1) {
-                var src = url + ".mp3";
-            }
-            else if (supports.indexOf(".wav") > -1) {
-                var src = url + ".wav";
-            }
+                    var src = url + ".ogg";
+                } else if (supports.indexOf(".mp3") > -1) {
+                    var src = url + ".mp3";
+                } else if (supports.indexOf(".wav") > -1) {
+                    var src = url + ".wav";
+                }
         } else {
-            if (supports.indexOf(ext[0]) > -1){
+            if (supports.indexOf(ext[0]) > -1) {
                 var src = url;
             } else {
                 console.error("ERROR: Your browser does not support the needed audio codec (" + ext[0] + ")!");
                 var src = "";
             }
         }
-        return src
+        return src;
     },
 
     /**
@@ -12754,24 +12539,24 @@ AudioData.prototype = {
      * @return {string[]} support - An array containing all compatible
      * formats
      */
-    _checkSupport: function (){
+    _checkSupport: function _checkSupport() {
         var supports = [];
-        if (document.createElement('audio').canPlayType("audio/ogg codecs=opus") != ""){
+        if (document.createElement('audio').canPlayType("audio/ogg codecs=opus") != "") {
             supports.push(".opus");
         }
-        if (document.createElement('audio').canPlayType("audio/ogg") != ""){
+        if (document.createElement('audio').canPlayType("audio/ogg") != "") {
             supports.push(".ogg");
         }
-        if (document.createElement('audio').canPlayType("audio/x-wav") != ""){
+        if (document.createElement('audio').canPlayType("audio/x-wav") != "") {
             supports.push(".wav");
         }
-        if (document.createElement('audio').canPlayType("audio/mpeg") != ""){
+        if (document.createElement('audio').canPlayType("audio/mpeg") != "") {
             supports.push(".mp3");
         }
-        if (document.createElement('audio').canPlayType('audio/mp4') != ""){
+        if (document.createElement('audio').canPlayType('audio/mp4') != "") {
             supports.push(".mp4");
         }
-        if (document.createElement('audio').canPlayType('audio/mp4; codecs="mp4a.40.5"') != ""){
+        if (document.createElement('audio').canPlayType('audio/mp4; codecs="mp4a.40.5"') != "") {
             supports.push(".m4a");
         }
         console.debug("Your browser seems to support these containers: " + supports);
@@ -12784,15 +12569,15 @@ AudioData.prototype = {
      * @protected
      * @param {string} url - URL
      */
-    _loadSound: function(url) {
+    _loadSound: function _loadSound(url) {
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.responseType = 'arraybuffer';
 
         // Decode asynchronously
         var that = this;
-        request.onload = function() {
-            that.ctx.decodeAudioData(request.response, function(buffer) {
+        request.onload = function () {
+            that.ctx.decodeAudioData(request.response, function (buffer) {
                 that._buffer = buffer;
                 that.canplay = true;
                 that._rangeEnd = that._buffer.duration;
@@ -12809,25 +12594,23 @@ AudioData.prototype = {
         };
         request.send();
     }
-}
 
-
-/**
- * Represents Controller class which has all the logic to control an
- * array of {@link AudioData} instances
- *
- * @constructor
- *
- * @param {Object} [ctx] - An AudioContext instance.
- * @param {string[]} [sounds] - Array with list of URLs of the audio sources (with or without
- * extension).
- * @param {boolean} [checkSupportFlag=true] - Enable / disable extension
- * support for passed url (see [AudioData._checkExtension]{@link AudioData#_checkExtension})
- *
- * @fires module:irtPlayer~IRTPlayer#player_ready
- * @fires module:irtPlayer~IRTPlayer#player_ended
- */
-var IRTPlayer = function(ctx, sounds, checkSupportFlag){
+    /**
+     * Represents Controller class which has all the logic to control an
+     * array of {@link AudioData} instances
+     *
+     * @constructor
+     *
+     * @param {Object} [ctx] - An AudioContext instance.
+     * @param {string[]} [sounds] - Array with list of URLs of the audio sources (with or without
+     * extension).
+     * @param {boolean} [checkSupportFlag=true] - Enable / disable extension
+     * support for passed url (see [AudioData._checkExtension]{@link AudioData#_checkExtension})
+     *
+     * @fires module:irtPlayer~IRTPlayer#player_ready
+     * @fires module:irtPlayer~IRTPlayer#player_ended
+     */
+};var IRTPlayer = function IRTPlayer(ctx, sounds, checkSupportFlag) {
     if (typeof ctx === 'undefined') {
         if (typeof AudioContext !== 'undefined') {
             var ctx = new AudioContext();
@@ -12871,7 +12654,7 @@ var IRTPlayer = function(ctx, sounds, checkSupportFlag){
     //this.muteOthers(0);
     this._loaded_counter = 0;
     this._ended_counter = 0;
-    }
+};
 
 IRTPlayer.prototype = {
 
@@ -12880,9 +12663,9 @@ IRTPlayer.prototype = {
      *
      * @param {string[]} sounds - Array of URLs
      */
-    init: function(sounds){
-        if (typeof sounds != "undefined"){
-            for (var i=0; i < sounds.length; i++) {
+    init: function init(sounds) {
+        if (typeof sounds != "undefined") {
+            for (var i = 0; i < sounds.length; i++) {
                 //this.signals[i] = new AudioData(this.ctx, sounds[i]); // can be also used to reset tracks array
                 this.addURL(sounds[i]);
             }
@@ -12896,9 +12679,8 @@ IRTPlayer.prototype = {
                 this._addEventListener(this.signals[i]);
             }
             */
-        }
-        else {
-            log.warn('No urls for sounds passed');
+        } else {
+            console.warn('No urls for sounds passed');
         }
     },
 
@@ -12907,7 +12689,7 @@ IRTPlayer.prototype = {
      *
      * @param {string} url - URL of to be added audio source
      */
-    addURL: function(url){
+    addURL: function addURL(url) {
         var audio = new AudioData(this.ctx, url, this.ctx.destination, this._checkSupport);
         this.addAudioData(audio);
 
@@ -12921,22 +12703,22 @@ IRTPlayer.prototype = {
      *
      * @param {AudioData} audioData - instance of to be added audio data object
      */
-    addAudioData: function(audioData){
+    addAudioData: function addAudioData(audioData) {
         this._addEventListener(audioData);
         audioData.setLoopState(false);
         this.signals.push(audioData);
     },
 
-    _addEventListener: function(audioData){
+    _addEventListener: function _addEventListener(audioData) {
         // NOTE: This is likely working only due to the delayed loading of
         // the audio files. As we all know, the event listener must be already registered
         // before the event trigger can be registered as well. So in the worst case,
         // the audio files will be loaded and decoded _before_ the listener is
         // registered which means that NO event will be triggered and received..!
         // TODO: find a good workaround for this issue!
-        $(audioData).on("audio_loaded", function(){
+        $(audioData).on("audio_loaded", function () {
             this._loaded_counter += 1;
-            if (this._loaded_counter == this.signals.length){
+            if (this._loaded_counter == this.signals.length) {
                 console.debug("All buffers are loaded & decoded");
                 /**
                  * Will be fired to the DOM once all audio signals are loaded.
@@ -12952,9 +12734,9 @@ IRTPlayer.prototype = {
             }
         }.bind(this));
 
-        $(audioData).on("audio_ended", function(){
+        $(audioData).on("audio_ended", function () {
             this._ended_counter += 1;
-            if (this._ended_counter == this.signals.length){
+            if (this._ended_counter == this.signals.length) {
                 this.playing = false;
                 console.debug("All buffers ended");
                 /**
@@ -12973,11 +12755,10 @@ IRTPlayer.prototype = {
     /**
      * Toggles play / pause of playback
      */
-    togglePlay: function(){
-        if (this.playing == false){
+    togglePlay: function togglePlay() {
+        if (this.playing == false) {
             this.play();
-        }
-        else {
+        } else {
             this.pause();
         }
     },
@@ -12985,7 +12766,7 @@ IRTPlayer.prototype = {
     /**
      * Starts playback of all audio sources in {@link IRTPlayer#signals}
      */
-    play: function(){
+    play: function play() {
         this._do('play');
         this.playing = true;
         this._do('setLoopState', this.loopingState);
@@ -12995,7 +12776,7 @@ IRTPlayer.prototype = {
     /**
      * Pauses playback of all audio sources in {@link IRTPlayer#signals}
      */
-    pause: function(){
+    pause: function pause() {
         this._do('pause');
         this.playing = false;
     },
@@ -13003,7 +12784,7 @@ IRTPlayer.prototype = {
     /**
      * Stops playback of all audio sources in {@link IRTPlayer#signals}
      */
-    stop: function(){
+    stop: function stop() {
         this._do('stop');
         this.playing = false;
         this._do("setLoopState", false);
@@ -13015,22 +12796,21 @@ IRTPlayer.prototype = {
      *
      * @param {integer} id - Array index number of active audio source
      */
-    muteOthers: function(id){
+    muteOthers: function muteOthers(id) {
         id = parseInt(id);
-        if ((id < this.signals.length) && (id >= 0)){
+        if (id < this.signals.length && id >= 0) {
             this._do('mute');
             this.signals[id].unmute();
             this.activeSignal = id;
-        }
-        else{
-            console.error("Passed array index invalid!")
+        } else {
+            console.error("Passed array index invalid!");
         }
     },
 
     /**
      * Will unmute all audio sources in {@link IRTPlayer#signals}
      */
-    unmuteAll: function(){
+    unmuteAll: function unmuteAll() {
         this._do('unmute');
         this.activeSignal = null;
     },
@@ -13044,26 +12824,24 @@ IRTPlayer.prototype = {
      * @param {float} attenuation - Gain value for other (attenuated)
      * audio sources
      */
-    attenuateOthers: function(id, attenuation){
+    attenuateOthers: function attenuateOthers(id, attenuation) {
         id = parseInt(id);
-        if ((id < this.signals.length) && (id >= 0)){
+        if (id < this.signals.length && id >= 0) {
             this._do('setGain', attenuation);
             this.signals[id].setGain(this.vol);
             this.activeSignal = id;
-        }
-        else{
-            console.error("Passed array index invalid!")
+        } else {
+            console.error("Passed array index invalid!");
         }
     },
 
     /**
      * Disables / enables looping of the audio sources
      */
-    toggleLoop: function() {
-        if (this.loopingState == false){
+    toggleLoop: function toggleLoop() {
+        if (this.loopingState == false) {
             this.loopingState = true;
-        }
-        else {
+        } else {
             this.loopingState = false;
         }
         this._do('toggleLoop');
@@ -13075,7 +12853,7 @@ IRTPlayer.prototype = {
      * @param {float} pos  - Start playback always at passed
      * position for all audio sources in {@link IRTPlayer#signals}
      */
-    setRangeStart: function(pos){
+    setRangeStart: function setRangeStart(pos) {
         console.info("Range start: " + pos);
         this._do('setRangeStart', pos);
     },
@@ -13086,7 +12864,7 @@ IRTPlayer.prototype = {
      * @param {float} pos  - End playback always at passed
      * position for all audio sources in {@link IRTPlayer#signals}
      */
-    setRangeEnd: function(pos){
+    setRangeEnd: function setRangeEnd(pos) {
         console.info("Range end: " + pos);
         this._do('setRangeEnd', pos);
     },
@@ -13097,7 +12875,7 @@ IRTPlayer.prototype = {
      * @param {float} time  - Must be between 0 and {@link
      * AudioData#_rangeEnd}
      */
-    setTime: function(time){
+    setTime: function setTime(time) {
         this._do('setTime', time);
     },
 
@@ -13105,7 +12883,7 @@ IRTPlayer.prototype = {
      * Returns current position of playback
      * @return {number} pos - Current playback position
      */
-    getTime: function(){
+    getTime: function getTime() {
         return this.signals[0].getTime();
     },
 
@@ -13117,23 +12895,24 @@ IRTPlayer.prototype = {
      * should be passed to the method
      * @protected
      */
-    _do: function(func){
-        if (arguments.length == 2){
-            var args = arguments[1];    // prevents that a single argument will be passed as array with one entry
+    _do: function _do(func) {
+        if (arguments.length == 2) {
+            var args = arguments[1]; // prevents that a single argument will be passed as array with one entry
         } else {
             var args = Array.prototype.splice.call(arguments, 1);
         }
-        for (var i=0; i < this.signals.length; i++){
+        for (var i = 0; i < this.signals.length; i++) {
             this.signals[i][func](args);
         }
     }
-}
-
+};
 
 exports.AudioData = AudioData;
 exports.IRTPlayer = IRTPlayer;
 
-},{"jquery":2,"loglevel":3}],11:[function(require,module,exports){
+},{"jquery":2}],10:[function(require,module,exports){
+'use strict';
+
 /*jshint esversion: 6 */
 /**
  * @file media_controller.js
@@ -13162,7 +12941,7 @@ var GainController = require('./gain_controller');
  * @fires module:bogJS~MediaElementController#audio_loaded
  * @fires module:bogJS~MediaElementController#audio_ended
  */
-var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList) {
+var MediaElementController = function MediaElementController(ctx, mediaElement, tracks, targetNodeList) {
     /** @protected
      * @var {boolean} */
     this.canplay = false;
@@ -13179,18 +12958,18 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
     this.gainController = [];
     if (typeof targetNodeList === 'undefined') {
         var targetNodeList = [];
-        for (var i = 0; i < this._tracks; i++){
+        for (var i = 0; i < this._tracks; i++) {
             targetNodeList.push(this.ctx.destination);
         }
     }
-    for (var i = 0; i < this._tracks; i++){
+    for (var i = 0; i < this._tracks; i++) {
         this.gainController[i] = new GainController(this.ctx, targetNodeList[i]);
 
         // TODO: Workaround for wrong channel order of decoded bitstream
         this._splitter.connect(this.gainController[i].gainNode, i);
     }
 
-    this._mediaElement.onended = function(){
+    this._mediaElement.onended = function () {
         console.debug("Audio buffer has ended!");
         this._playing = false;
 
@@ -13201,19 +12980,19 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
         $(this).triggerHandler("audio_ended");
     }.bind(this);
 
-    this._mediaElement.onstalled = function(){
+    this._mediaElement.onstalled = function () {
         console.info("Pausing playback - need to buffer more");
         this.ctx.suspend();
     }.bind(this);
 
-    this._mediaElement.onplaying = function(){
+    this._mediaElement.onplaying = function () {
         console.info("Resuming playback of media element");
-        if (this.ctx.state === "suspended"){
+        if (this.ctx.state === "suspended") {
             this.ctx.resume();
         }
     }.bind(this);
 
-    this._mediaElement.oncanplaythrough = function(){
+    this._mediaElement.oncanplaythrough = function () {
         this.canplay = true;
         console.info("Playback of media element can start");
 
@@ -13222,7 +13001,7 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
          * @event module:bogJS~MediaElementController#audio_loaded
          */
         $(this).triggerHandler('audio_loaded');
-        if (this.ctx.state === "suspended"){
+        if (this.ctx.state === "suspended") {
             this.ctx.resume();
         }
     }.bind(this);
@@ -13230,7 +13009,7 @@ var MediaElementController = function(ctx, mediaElement, tracks, targetNodeList)
     this._mediaElement.load();
     this._playing = false;
     this._looping = false;
-}
+};
 
 MediaElementController.prototype = {
     /**
@@ -13239,13 +13018,14 @@ MediaElementController.prototype = {
     * @param {number} [pos] - Position from which the playback shall start
     * (optional)
     */
-    play: function(pos){
-        if (typeof pos != 'number'){        // detection with _.isNumber() could be more robust
+    play: function play(pos) {
+        if (typeof pos != 'number') {
+            // detection with _.isNumber() could be more robust
             this._mediaElement.play();
         } else {
             console.debug("Starting playback at " + pos);
             this.setTime(pos);
-            this._mediaElement.play()
+            this._mediaElement.play();
         }
         this._playing = true;
     },
@@ -13254,7 +13034,7 @@ MediaElementController.prototype = {
      * Pause playback.
      *
      */
-    pause: function(){
+    pause: function pause() {
         this._mediaElement.pause();
         this._playing = false;
     },
@@ -13262,7 +13042,7 @@ MediaElementController.prototype = {
     /**
      * Stops playback.
      */
-    stop: function(){
+    stop: function stop() {
         this._mediaElement.pause();
         this._playing = false;
         this._mediaElement.currentTime = 0;
@@ -13273,7 +13053,7 @@ MediaElementController.prototype = {
      *
      * @param {float} gain - Value between 0.0 and 1.0
      */
-    setVolume: function(vol){
+    setVolume: function setVolume(vol) {
         this._mediaElement.volume = vol;
     },
 
@@ -13282,15 +13062,15 @@ MediaElementController.prototype = {
      *
      * @return {float} value - Float gain value
      */
-    getVolume: function(){
+    getVolume: function getVolume() {
         return this._mediaElement.volume;
     },
 
     /**
      * Disables / enables the loop of the {@link MediaElementController} instance
      */
-    toggleLoop: function() {
-        if (this._looping == false){
+    toggleLoop: function toggleLoop() {
+        if (this._looping == false) {
             this._looping = true;
         } else {
             this._looping = false;
@@ -13301,7 +13081,7 @@ MediaElementController.prototype = {
     /**
      * Disables / enables the loop of the {@link MediaElementController} instance
      */
-    setLoopState: function(bool) {
+    setLoopState: function setLoopState(bool) {
         this._looping = bool;
         this._mediaElement.loop = this._looping;
     },
@@ -13309,14 +13089,14 @@ MediaElementController.prototype = {
     /**
      * Mutes {@link MediaElementController} instance
      */
-    mute: function(){
+    mute: function mute() {
         this._mediaElement.muted = true;
     },
 
     /**
      * Unmutes {@link MediaElementController} instance
      */
-    unmute: function(){
+    unmute: function unmute() {
         this._mediaElement.muted = false;
     },
 
@@ -13325,8 +13105,8 @@ MediaElementController.prototype = {
      *
      * @param {float} pos  - Must be >= 0
      */
-    setTime: function(pos){
-        if (pos >= 0){
+    setTime: function setTime(pos) {
+        if (pos >= 0) {
             this._mediaElement.currentTime = pos;
         }
     },
@@ -13336,14 +13116,16 @@ MediaElementController.prototype = {
      *
      * @return {number} value - Current playback position
      */
-    getTime: function(){
+    getTime: function getTime() {
         return this._mediaElement.currentTime;
     }
-}
+};
 
 module.exports = MediaElementController;
 
-},{"./gain_controller":9,"jquery":2}],12:[function(require,module,exports){
+},{"./gain_controller":8,"jquery":2}],11:[function(require,module,exports){
+"use strict";
+
 /*jshint esversion: 6 */
 /**
  * @file object.js
@@ -13370,7 +13152,9 @@ var GainController = require('./gain_controller');
  * shall be connected to.
  */
 
-var ObjectController = function(ctx, sourceNode, targetNode=ctx.destination) {
+var ObjectController = function ObjectController(ctx, sourceNode) {
+    var targetNode = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ctx.destination;
+
     /**
      * Instance of Web Audio Panner node
      * @var {Object.<AudioContext.PannerNode>}
@@ -13391,12 +13175,12 @@ var ObjectController = function(ctx, sourceNode, targetNode=ctx.destination) {
     this.panner.maxDistance = 10;
 
     this.setPanningType(this.panningType);
-    this.position = [0, 0, 0];  // FIXME: make private and use set and get methods
-    this.gain = 1;  // valid values between 0 and 1  // FIXME: make private and use set and get methods
+    this.position = [0, 0, 0]; // FIXME: make private and use set and get methods
+    this.gain = 1; // valid values between 0 and 1  // FIXME: make private and use set and get methods
 
     this._state = false;
     this.stateNode = new GainController(ctx, this.panner);
-    //this.stateNode.connect(this.panner);
+    this.interactiveGain = new GainController(ctx, this.stateNode.gainNode);
 
     this.setAudio(sourceNode);
     this.panner.connect(targetNode);
@@ -13408,14 +13192,13 @@ ObjectController.prototype = {
      * Change position of panner object within 3D space
      *
      * @param {Float[]} xyz - An array with three entries: [x, y, z]
-
-     * @see Interpolation as per AudioParam Interface not possible with
+      * @see Interpolation as per AudioParam Interface not possible with
      * current WAA version. The PannerNode will be deprecated in V1
      * and a new SpatializerNode will be introduced that should
      * support interpolation _and_ loading own HRTF databases!!
      * {@link https://github.com/WebAudio/web-audio-api/issues/372| GitHub issue 372}
      */
-    setPosition: function(xyz){
+    setPosition: function setPosition(xyz) {
         var my_xyz = [parseFloat(xyz[0]), parseFloat(xyz[1]), parseFloat(xyz[2])];
         this.panner.setPosition(xyz[0], xyz[1], xyz[2]);
         console.debug("New Position: " + my_xyz);
@@ -13426,7 +13209,7 @@ ObjectController.prototype = {
      * Get current Position of object
      * @return {Float[]} position - Array with current [x, y, z] values
      */
-    getPosition: function(){
+    getPosition: function getPosition() {
         return this.position;
     },
 
@@ -13436,12 +13219,11 @@ ObjectController.prototype = {
      * @param {Boolean} state - Enables / disables the panner object
      * instance
      */
-    setStatus: function(state){
-        if ((state === true) || (state == 1)){
+    setStatus: function setStatus(state) {
+        if (state === true || state == 1) {
             this.stateNode.unmute();
             this._state = true;
-        }
-        else if ((state === false) || (state == 0)){
+        } else if (state === false || state == 0) {
             this.stateNode.mute();
             this._state = false;
         }
@@ -13449,10 +13231,22 @@ ObjectController.prototype = {
     },
 
     /**
+     * Sets gain value of {@link
+     * module:bogJS~GainController#gainNode|GainController.gainNode}
+     * Separate GainNode to be used for interactive Gain control, aka
+     * cross-fading between one group and another.
+     * @param {Float} gain - Must be between 0.0 and 1.0
+     */
+    setInteractiveGain: function setInteractiveGain(gain) {
+        this.interactiveGain.setGain(gain);
+        this._interactiveGain = gain;
+    },
+
+    /**
      * Returns current object state
      * @return {Boolean} status
      */
-    getStatus: function(){
+    getStatus: function getStatus() {
         return this._state;
     },
 
@@ -13466,15 +13260,16 @@ ObjectController.prototype = {
      * value shall be linear faded to passed gain value from passed time on. If
      * false, the gain value will be applied immediately.
      */
-    setGain: function(gain, time="now", interpolation=false){
+    setGain: function setGain(gain) {
+        var time = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "now";
+        var interpolation = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
         if (time === "now") {
             this.audio.setGain(gain);
             this.gain = gain;
-        }
-        else if ((time !== "now") && (interpolation === false)) {
+        } else if (time !== "now" && interpolation === false) {
             this.audio.gainNode.gain.setValueAtTime(gain, time);
-        }
-        else if ((time !== "now") && (interpolation !== false)){
+        } else if (time !== "now" && interpolation !== false) {
             this.audio.gainNode.gain.linearRampToValueAtTime(gain, time);
         }
     },
@@ -13485,8 +13280,8 @@ ObjectController.prototype = {
      *
      * @return {Float} gain
      */
-    getGain: function(){
-        return this.audio.getGain();  // or do we trust in this.gain ??
+    getGain: function getGain() {
+        return this.audio.getGain(); // or do we trust in this.gain ??
     },
 
     /**
@@ -13496,12 +13291,11 @@ ObjectController.prototype = {
      * @param {("HRTF"|"equalpower")} panningType - Choose "HRTF" for binaural
      * rendering or "equalpower" for Stereo rendering.
      */
-    setPanningType: function(panningType){
-        if ((panningType === "HRTF") || (panningType === "equalpower")){
+    setPanningType: function setPanningType(panningType) {
+        if (panningType === "HRTF" || panningType === "equalpower") {
             this.panner.panningModel = panningType;
             this.panningType = this.panner.panningModel;
-        }
-        else {
+        } else {
             console.error("Only >>HRTF<< or >>equalpower<< are valid types");
         }
     },
@@ -13510,7 +13304,7 @@ ObjectController.prototype = {
      * Get panning type
      * @return {("HRTF"|"equalpower")} panningType - Either "HRTF" or "equalpower"
      */
-    getPanningType: function(){
+    getPanningType: function getPanningType() {
         return this.panner.panningModel;
     },
 
@@ -13521,7 +13315,7 @@ ObjectController.prototype = {
      *
      * @param {Float} factor
      */
-    setRollOffFactor: function(factor){
+    setRollOffFactor: function setRollOffFactor(factor) {
         this.panner.rolloffFactor = factor;
     },
 
@@ -13532,7 +13326,7 @@ ObjectController.prototype = {
      *
      * @param {("inverse"|"exponential"|"linear")} model - "inverse" is the default setting
      */
-    setDistanceModel: function(model){
+    setDistanceModel: function setDistanceModel(model) {
         this.panner.distanceModel = model;
     },
 
@@ -13543,7 +13337,7 @@ ObjectController.prototype = {
      *
      * @param {float} refDistance
      */
-    setRefDistance: function(refDistance){
+    setRefDistance: function setRefDistance(refDistance) {
         this.panner.refDistance = refDistance;
     },
 
@@ -13555,7 +13349,7 @@ ObjectController.prototype = {
      *
      * @param {float} maxDistance
      */
-    setMaxDistance: function(maxDistance){
+    setMaxDistance: function setMaxDistance(maxDistance) {
         this.panner.maxDistance = maxDistance;
     },
 
@@ -13566,7 +13360,7 @@ ObjectController.prototype = {
      * @param {AudioData} audioNode - Instance of an {@link
      * module:irtPlayer~AudioData|AudioData} or GainController object.
      */
-    setAudio: function(audioNode){
+    setAudio: function setAudio(audioNode) {
         // call disconnect only if this.audio exists
         // it is absolutely essential to disconnect the old audio instance
         // before the new one can be assigned!
@@ -13577,26 +13371,35 @@ ObjectController.prototype = {
         */
         this.audio = audioNode;
         // just to make sure we assigned a valid audioNode..
-        if (this.audio){
+        if (this.audio) {
             // FIXME: AudioData() class should also have a connect method.
             // Better would be to use derived class mechanisms.
-            if(this.audio.connect) {
-                this.audio.connect(this.stateNode);
-            }
-            else {
-                this.audio.reconnect(this.stateNode);
+            if (this.audio.connect) {
+                this.audio.connect(this.interactiveGain.gainNode);
+            } else {
+                this.audio.reconnect(this.interactiveGain.gainNode);
             }
         }
     },
 
-    setHighpassFreq: function(freq){
+    setHighpassFreq: function setHighpassFreq(freq) {
         this.highpass.frequency.value = freq;
     }
 };
 
 module.exports = ObjectController;
 
-},{"./gain_controller":9}],13:[function(require,module,exports){
+},{"./gain_controller":8}],12:[function(require,module,exports){
+'use strict';
+
+var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+} : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+};
+
 /*jshint esversion: 6 */
 /**
  * @file object_manager.js
@@ -13674,6 +13477,7 @@ var ChannelOrderTest = require('./channelorder_test');
 var AudioData = require('./html5_player/core').AudioData;
 var IRTPlayer = require('./html5_player/core').IRTPlayer;
 var ObjectController = require('./object');
+var GainController = require('./gain_controller');
 var MediaElementController = require('./media_controller');
 var SceneReader = require('./scene_reader');
 
@@ -13704,7 +13508,7 @@ var SceneReader = require('./scene_reader');
  * @fires module:bogJS~ObjectManager#om_isActive
  *
  */
-var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, channelorder_root){
+var ObjectManager = function ObjectManager(url, ctx, reader, mediaElement, audiobed_tracks, channelorder_root) {
     if (typeof ctx === 'undefined') {
         if (typeof AudioContext !== 'undefined') {
             var ctx = new AudioContext();
@@ -13719,7 +13523,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
      * @var {Object.<AudioContext>}
      */
     this.ctx = ctx;
-
+    this.masterGain = new GainController(this.ctx, ctx.destination);
     /**
      * Instance of {@link SceneReader}
      * @var {(CustomReaderInstance|Object.<module:bogJS~SceneReader>)}
@@ -13769,7 +13573,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
     this._listenerOrientation = [0, 0, -1];
     this.setListenerOrientation(0, 0, -1);
 
-    $(this.reader).on('scene_loaded', function(e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo){
+    $(this.reader).on('scene_loaded', function (e, keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo) {
         console.debug('Scene data loaded!');
 
         /**
@@ -13835,15 +13639,16 @@ ObjectManager.prototype = {
      * [ObjectController]{@link module:bogJS~ObjectController} instances and
      * adds the AudioData instances to the {@link module:bogJS~ObjectManager#player}
      */
-    init: function(){
-        if (typeof this._mediaElement !== 'undefined'){
+    init: function init() {
+        if (typeof this._mediaElement !== 'undefined') {
             this._audiobed = new MediaElementController(this.ctx, this._mediaElement, this._mediaElementTracks);
-        } else if (this._sceneInfo.audiobed_url){
+        } else if (this._sceneInfo.audiobed_url) {
             var a = document.createElement("audio");
             var src = this._sceneInfo.audiobed_url;
-            if (/\.[0-9a-z]{3,4}$/i.exec(src) === null){  // if no file extension is stated
+            if (/\.[0-9a-z]{3,4}$/i.exec(src) === null) {
+                // if no file extension is stated
                 if (a.canPlayType('audio/ogg codecs=opus')) {
-                    a.type= 'audio/ogg codecs=opus';
+                    a.type = 'audio/ogg codecs=opus';
                     src = src + '.opus';
                 } else {
                     a.type = 'audio/mp4';
@@ -13854,77 +13659,77 @@ ObjectManager.prototype = {
             this._mediaElementTracks = parseInt(this._sceneInfo.audiobed_tracks);
             this._audiobed = new MediaElementController(this.ctx, a, this._mediaElementTracks);
         }
-        if (this._audiobed !== false){
+        if (this._audiobed !== false) {
             // If there is an audiobed, we can trigger the om_ready event even
             // though other keyframe assets are not yet ready. We need to trigger
             // the event here in case NO other assets are used.
             // This is for sure not really a sophisticated way to solve this but it
             // should work. In the worst case, the playback will pause again if
             // the assets are not yet loaded and decoded.
-            $(this._audiobed).on('audio_loaded', function(){
+            $(this._audiobed).on('audio_loaded', function () {
                 $(document).triggerHandler('om_ready');
                 console.debug('Audiobed ready for playback');
             }.bind(this));
-            $(this._audiobed).on('audio_ended', function(){
+            $(this._audiobed).on('audio_ended', function () {
                 $(document).triggerHandler('om_ended');
                 om.stop();
             }.bind(this));
             var url = this._audiobed._mediaElement.src;
-            var re = /\.[0-9a-z]{3,4}$/i;  // strips the file extension (must be 3 or 4 characters)
+            var re = /\.[0-9a-z]{3,4}$/i; // strips the file extension (must be 3 or 4 characters)
             var container = re.exec(url)[0];
             container = container.split('.').join(""); // removes dot from the string
             var chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
-            $(chOrderTest).on('order_ready', function(e, order){
+            $(chOrderTest).on('order_ready', function (e, order) {
                 console.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
                 // confusions and strange behaviours..
-                for (var i = 0; i < order.length; i++){
-                    this.objects["Bed"+order[i]].audio.disconnect();
+                for (var i = 0; i < order.length; i++) {
+                    this.objects["Bed" + order[i]].audio.disconnect();
                 }
                 // now assign correct gainController to corresponding
                 // pannerNode
-                for (var i = 0; i < order.length; i++){
+                for (var i = 0; i < order.length; i++) {
                     console.debug("Reconnecting GainController " + i + " with Bed " + order[i]);
-                    this.objects["Bed"+order[i]].setAudio(this._audiobed.gainController[i]);
+                    this.objects["Bed" + order[i]].setAudio(this._audiobed.gainController[i]);
                 }
             }.bind(this));
             var chOrder = chOrderTest.testChs();
         }
 
-        for (var obj in this._audiobedTracks){
+        for (var obj in this._audiobedTracks) {
             var trackNr = parseInt(this._audiobedTracks[obj].split("_")[1]);
-            this.objects[obj] = new ObjectController(this.ctx, this._audiobed.gainController[trackNr]);
+            this.objects[obj] = new ObjectController(this.ctx, this._audiobed.gainController[trackNr], this.masterGain.gainNode);
             this.objects[obj].audio._id = obj;
             this.objects[obj].panner._id = obj;
         }
 
-        for (var kf in this._groupObjURLs){
+        for (var kf in this._groupObjURLs) {
             this._groupObjPlayers[kf] = {};
             this._kf_canplay[kf] = {};
-            for (var group in this._groupObjURLs[kf]){
+            for (var group in this._groupObjURLs[kf]) {
                 this._kf_canplay[kf][group] = false;
                 var player = new IRTPlayer(this.ctx);
                 $(player).on('player_ready', this._loadedStateDelegate(kf, group));
-                for (var idx in this._groupObjURLs[kf][group]){
+                for (var idx in this._groupObjURLs[kf][group]) {
                     var obj = this._groupObjURLs[kf][group][idx];
                     var url = this._audioURLs[obj];
                     var audioInstance = new AudioData(this.ctx, url);
                     audioInstance.load();
                     audioInstance.setLoopState(false);
-                    this.objects[obj] = new ObjectController(this.ctx, audioInstance);
+                    this.objects[obj] = new ObjectController(this.ctx, audioInstance, this.masterGain.gainNode);
                     player.addAudioData(audioInstance);
                     this._groupObjPlayers[kf][group] = player;
                 }
             }
         }
 
-        for (var kf in this._singleObjURLs){
+        for (var kf in this._singleObjURLs) {
             this._singleObjAudios[kf] = {};
-            if (!this._kf_canplay[kf]){
+            if (!this._kf_canplay[kf]) {
                 this._kf_canplay[kf] = {};
             }
-            for (var idx in this._singleObjURLs[kf]){
+            for (var idx in this._singleObjURLs[kf]) {
                 var obj = this._singleObjURLs[kf][idx];
                 var url = this._audioURLs[obj];
                 this._kf_canplay[kf][obj] = false;
@@ -13932,16 +13737,37 @@ ObjectManager.prototype = {
                 $(audioInstance).on("audio_loaded", this._loadedStateDelegate(kf, obj));
                 audioInstance.load();
                 audioInstance.setLoopState(false);
-                this.objects[obj] = new ObjectController(this.ctx, audioInstance);
+                this.objects[obj] = new ObjectController(this.ctx, audioInstance, this.masterGain.gainNode);
                 this._singleObjAudios[kf][obj] = audioInstance;
             }
         }
         this.setPanningType(this._panningType);
         $(document).triggerHandler('om_initialized');
         console.debug('Scene sucessfully initialized!');
-        if (this.interactiveInfo.switchGroup){
-            for (var g of Object.keys(this.interactiveInfo.switchGroup)){
-                this._initSwitchGroup(g);
+        if (this.interactiveInfo.switchGroups) {
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = Object.keys(this.interactiveInfo.switchGroups)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var g = _step.value;
+
+                    this._initSwitchGroup(g);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
             }
         }
         //this.start();
@@ -13950,16 +13776,18 @@ ObjectManager.prototype = {
     /**
      * Starts playback and rendering of audio scene
      */
-    start: function(){
-        if ((this._checkReadyStart() === true) && (this.playing === false)) {
+    start: function start() {
+        if (this._checkReadyStart() === true && this.playing === false) {
             this._clock.start();
             this._startTime = this.ctx.currentTime;
             this._processCurrentKeyframes();
-            if (this._audiobed !== false){
+            if (this._audiobed !== false) {
                 this._audiobed.play();
             }
             var that = this;
-            var evt = this._clock.setTimeout(function(){console.debug(that.ctx.currentTime);}, 1).repeat(1);
+            var evt = this._clock.setTimeout(function () {
+                console.debug(that.ctx.currentTime);
+            }, 1).repeat(1);
             this.playing = true;
             return true;
         } else {
@@ -13971,9 +13799,9 @@ ObjectManager.prototype = {
     /**
      * Pauses playback
      */
-    pause: function(){
+    pause: function pause() {
         this.ctx.suspend();
-        if (this._audiobed !== false){
+        if (this._audiobed !== false) {
             this._audiobed.pause();
         }
         this.playing = false;
@@ -13983,9 +13811,9 @@ ObjectManager.prototype = {
      * Resumes playback of all objects if paused.
      *
      */
-    resume: function(){
+    resume: function resume() {
         this.ctx.resume();
-        if (this._audiobed !== false){
+        if (this._audiobed !== false) {
             this._audiobed.play();
         }
         this.playing = true;
@@ -13995,11 +13823,10 @@ ObjectManager.prototype = {
      * togglePause
      *
      */
-    togglePause: function(){
-        if(this.ctx.state === 'running') {
+    togglePause: function togglePause() {
+        if (this.ctx.state === 'running') {
             this.pause();
-        }
-        else if(this.ctx.state === 'suspended') {
+        } else if (this.ctx.state === 'suspended') {
             this.resume();
         }
     },
@@ -14007,18 +13834,18 @@ ObjectManager.prototype = {
     /**
      * Stops playback and internal clock
      */
-    stop: function(){
+    stop: function stop() {
         this._clock.stop();
-        if (this._audiobed !== false){
+        if (this._audiobed !== false) {
             this._audiobed.stop();
         }
-        for (var kf in this._groupObjPlayers){
-            for (var group in this._groupObjPlayers[kf]){
+        for (var kf in this._groupObjPlayers) {
+            for (var group in this._groupObjPlayers[kf]) {
                 this._groupObjPlayers[kf][group].stop();
             }
         }
-        for (var kf in this._singleObjAudios){
-            for (var idx in this._singleObjAudios[kf]){
+        for (var kf in this._singleObjAudios) {
+            for (var idx in this._singleObjAudios[kf]) {
                 this._singleObjAudios[kf][idx].stop();
             }
         }
@@ -14032,21 +13859,21 @@ ObjectManager.prototype = {
      *
      * @param {float} time - Desired playback position
      */
-    setTime: function(time){
+    setTime: function setTime(time) {
         // activate closest keyframe before time to avoid
         // missing / "forgetting" object commands..
         var times = Object.keys(this._keyframes);
 
         // works even in case the keys are strings
         var closest_kf = _.min(times); //Get the lowest numberin case it match nothing.
-        for(var i = 0; i < times.length; i++){
-            if ((times[i] <= time) && (times[i] > closest_kf)){
+        for (var i = 0; i < times.length; i++) {
+            if (times[i] <= time && times[i] > closest_kf) {
                 closest_kf = times[i];
             }
         }
         this._handleKeyframe(closest_kf);
 
-        for (var key in this._evts){
+        for (var key in this._evts) {
             var evt = this._evts[key];
             var evt_time = parseFloat(key);
             var newTime = evt_time - time + this.ctx.currentTime;
@@ -14058,13 +13885,13 @@ ObjectManager.prototype = {
         // check if passed time > duration of the single and grouped audio
         // signals:
         var now = this.ctx.currentTime - this._startTime;
-        for (var kf in this._singleObjAudios){
+        for (var kf in this._singleObjAudios) {
             var audioStartPos = parseFloat(kf);
-            for (var idx in this._singleObjAudios[kf]){
+            for (var idx in this._singleObjAudios[kf]) {
                 var duration = this._singleObjAudios[kf][idx].duration;
                 var audioNewPos = time - audioStartPos;
                 // negative time values shall stop the signal.
-                if (audioNewPos <= 0){
+                if (audioNewPos <= 0) {
                     this._singleObjAudios[kf][idx].stop();
                 } else {
                     // should stop audio if audioNewPos > duration
@@ -14073,13 +13900,13 @@ ObjectManager.prototype = {
                 }
             }
         }
-        for (var kf in this._groupObjPlayers){
+        for (var kf in this._groupObjPlayers) {
             var audioStartPos = parseFloat(kf);
-            for (var group in this._groupObjPlayers[kf]){
+            for (var group in this._groupObjPlayers[kf]) {
                 var duration = this._groupObjPlayers[kf][group].duration;
                 var audioNewPos = time - audioStartPos;
                 // negative time values shall stop the signal.
-                if (audioNewPos <= 0){
+                if (audioNewPos <= 0) {
                     this._groupObjPlayers[kf][group].stop();
                 } else {
                     // should stop audio if audioNewPos > duration
@@ -14088,7 +13915,7 @@ ObjectManager.prototype = {
                 }
             }
         }
-        if (this._audiobed !== false){
+        if (this._audiobed !== false) {
             this._audiobed.setTime(time);
         }
     },
@@ -14096,11 +13923,11 @@ ObjectManager.prototype = {
     /**
      * Toggle panning type between Headphones (binaural) and Stereo rendering
      */
-    togglePanningType: function(){
-        if (this._panningType === "HRTF"){
+    togglePanningType: function togglePanningType() {
+        if (this._panningType === "HRTF") {
             this.setPanningType("equalpower");
             this._panningType = "equalpower";
-        } else if (this._panningType === "equalpower"){
+        } else if (this._panningType === "equalpower") {
             this.setPanningType("HRTF");
             this._panningType = "HRTF";
         }
@@ -14110,8 +13937,8 @@ ObjectManager.prototype = {
      * @param {("HRTF"|"equalpower")} type - Panning type for all
      * objects
      */
-    setPanningType: function(type){
-        for (var key in this.objects){
+    setPanningType: function setPanningType(type) {
+        for (var key in this.objects) {
             this.objects[key].setPanningType(type);
         }
         this._panningType = type;
@@ -14120,7 +13947,7 @@ ObjectManager.prototype = {
     /**
      * @returns {("HRTF"|"equalpower")} panningType
      */
-    getPanningType: function(){
+    getPanningType: function getPanningType() {
         return this._panningType;
     },
 
@@ -14134,7 +13961,7 @@ ObjectManager.prototype = {
      * @param y
      * @param z
      */
-    setListenerOrientation: function(x, y, z){
+    setListenerOrientation: function setListenerOrientation(x, y, z) {
         this._listenerOrientation = [x, y, z];
         this.ctx.listener.setOrientation(x, y, z, 0, 1, 0);
     },
@@ -14143,7 +13970,7 @@ ObjectManager.prototype = {
      * getListenerOrientation
      * @returns listenerOrientation
      */
-    getListenerOrientation: function(){
+    getListenerOrientation: function getListenerOrientation() {
         return this._listenerOrientation;
     },
 
@@ -14155,7 +13982,7 @@ ObjectManager.prototype = {
      * @param y
      * @param z
      */
-    setListenerPosition: function(x, y, z){
+    setListenerPosition: function setListenerPosition(x, y, z) {
         this._listenerPosition = [x, y, z];
         this.ctx.listener.setPosition(x, y, 0);
     },
@@ -14164,21 +13991,21 @@ ObjectManager.prototype = {
      * getListenerPosition
      * @returns listenerPosition
      */
-    getListenerPosition: function(){
+    getListenerPosition: function getListenerPosition() {
         return this._listenerPosition;
     },
 
-    _handleKeyframe: function(key){
+    _handleKeyframe: function _handleKeyframe(key) {
         console.debug("Activating keyframe: " + key);
         var keyframe = this._keyframes[key];
         //this._kfMapping = {};
-        if (this.interactive === false){
-            for (var i = 0; i < keyframe.length; i++){
+        if (this.interactive === false) {
+            for (var i = 0; i < keyframe.length; i++) {
                 var triplet = keyframe[i];
                 var obj = triplet.obj;
                 var cmd = triplet.cmd;
                 var params = triplet.params;
-                if (cmd === "position"){
+                if (cmd === "position") {
                     this.objects[obj].setPosition(params);
                     /**
                      * Will be fired if object from list gets new Position as per
@@ -14188,8 +14015,7 @@ ObjectManager.prototype = {
                      * @property {float[]} pos - New position values as array [x, y, z]
                      */
                     $(this).triggerHandler('om_newPosition', [obj, params]);
-                }
-                else if (cmd === "gain"){
+                } else if (cmd === "gain") {
                     this.objects[obj].setGain(params);
                     /**
                      * Will be fired if object from list gets new Gain
@@ -14199,19 +14025,17 @@ ObjectManager.prototype = {
                      * @property {number} gain - New gain value
                      */
                     $(this).triggerHandler('om_newGain', [obj, params]);
-                }
-                else if (cmd === "track_mapping"){
+                } else if (cmd === "track_mapping") {
                     var url = params;
-                    if (url in this._kfMapping === false){
+                    if (url in this._kfMapping === false) {
                         this._kfMapping[url] = obj;
-                    }
-                    else if ((url in this._kfMapping === true) && (this._kfMapping[url] !== obj)){
+                    } else if (url in this._kfMapping === true && this._kfMapping[url] !== obj) {
                         var objs = [];
                         var alreadyThere = [this._kfMapping[url]];
                         this._kfMapping[url] = objs.concat.apply(obj, alreadyThere);
                     }
-                }
-                else if (cmd === "is_present"){
+                } else if (cmd === "is_present") {
+                    var state;
                     if (params === 0) {
                         state = false;
                     } else if (params === 1) {
@@ -14219,6 +14043,7 @@ ObjectManager.prototype = {
                     } else {
                         state = params;
                     }
+                    // Removing as it was never really used and conflicts with switchGroups??
                     this.objects[obj].setStatus(state);
                     /**
                      * Will be fired if object from list has new State
@@ -14234,29 +14059,29 @@ ObjectManager.prototype = {
         //this._handleKeyframeMappings();
     },
 
-    _handleKeyframeAssets: function(kf){
+    _handleKeyframeAssets: function _handleKeyframeAssets(kf) {
         //this._kf_canplay = {};
-        if (kf in this._groupObjPlayers){
-            for (var group in this._groupObjPlayers[kf]){
+        if (kf in this._groupObjPlayers) {
+            for (var group in this._groupObjPlayers[kf]) {
                 var tmpGrp = this._groupObjPlayers[kf][group]; // TODO: does this cause additional delay?
-                if (tmpGrp.canplay === false){
+                if (tmpGrp.canplay === false) {
                     $(tmpGrp).on("audio_loaded", this._loadedStateDelegate(kf, group));
                 }
             }
         }
-        if (kf in this._singleObjAudios){
-            for (var obj in this._singleObjAudios[kf]){
+        if (kf in this._singleObjAudios) {
+            for (var obj in this._singleObjAudios[kf]) {
                 var tmpAudio = this._singleObjAudios[kf][obj]; // TODO: does this cause additional delay?
-                if (tmpAudio.canplay === false){
+                if (tmpAudio.canplay === false) {
                     $(tmpAudio).on("audio_loaded", this._loadedStateDelegate(kf, obj));
                 }
             }
         }
 
         // now check if all assets are ready for playing:
-        for (var el in this._kf_canplay[kf]){
+        for (var el in this._kf_canplay[kf]) {
             console.debug(el);
-            if (this._kf_canplay[kf][el] === false){
+            if (this._kf_canplay[kf][el] === false) {
                 console.debug("Pausing playback as not all assets are decoded yet.. ");
                 this.pause();
                 break;
@@ -14266,56 +14091,56 @@ ObjectManager.prototype = {
         this._startKeyframeAssets(kf);
     },
 
-    _startKeyframeAssets: function(kf){
-        if (kf in this._groupObjPlayers){
-            for (var group in this._groupObjPlayers[kf]){
+    _startKeyframeAssets: function _startKeyframeAssets(kf) {
+        if (kf in this._groupObjPlayers) {
+            for (var group in this._groupObjPlayers[kf]) {
                 var tmpGrp = this._groupObjPlayers[kf][group]; // TODO: does this cause additional delay?
                 tmpGrp.play();
             }
         }
-        if (kf in this._singleObjAudios){
-            for (var obj in this._singleObjAudios[kf]){
+        if (kf in this._singleObjAudios) {
+            for (var obj in this._singleObjAudios[kf]) {
                 var tmpAudio = this._singleObjAudios[kf][obj]; // TODO: does this cause additional delay?
                 tmpAudio.play();
             }
         }
     },
 
-    _loadedStateDelegate: function(kf, obj){
-        return function(){
+    _loadedStateDelegate: function _loadedStateDelegate(kf, obj) {
+        return function () {
             console.debug("Asset now ready: " + obj);
             this._kf_canplay[kf][obj] = true;
             this._checkLoadedState(kf);
         }.bind(this);
     },
 
-    _checkLoadedState: function(kf){
+    _checkLoadedState: function _checkLoadedState(kf) {
         console.debug(this._kf_canplay[kf]);
         for (var obj in this._kf_canplay[kf]) {
-            if (this._kf_canplay[kf][obj] !== true){
+            if (this._kf_canplay[kf][obj] !== true) {
                 console.debug("We still need to wait for decoding of asset(s)");
-                return;  // break loop and return in case any of the objects is not yet ready
+                return; // break loop and return in case any of the objects is not yet ready
             }
         }
 
         var first_kf = _.min(Object.keys(this._keyframes)); //Get the first keyframe
-        if (kf === first_kf){
+        if (kf === first_kf) {
             $(document).triggerHandler('om_ready');
         }
-        if (this.ctx.state === "suspended"){
+        if (this.ctx.state === "suspended") {
             console.debug("Resuming playback - all assets are decoded now");
             this.resume();
         }
     },
 
-    _handleKeyframeMappings: function(){
-        if (JSON.stringify(this._last_kfMapping) !== JSON.stringify(this._kfMapping)){
+    _handleKeyframeMappings: function _handleKeyframeMappings() {
+        if (JSON.stringify(this._last_kfMapping) !== JSON.stringify(this._kfMapping)) {
             console.info("Track mapping has changed" + JSON.stringify(this._kfMapping));
             // Firstly disconnect everything to make sure that no old
             // mappings stay connected
             // That means that changes have to be made explicitely and
             // not implicitely!
-            for (var key in this._audioInstances){
+            for (var key in this._audioInstances) {
                 this._audioInstances[key].disconnect();
             }
             /*
@@ -14324,14 +14149,15 @@ ObjectManager.prototype = {
             */
 
             // And now connect all the mappings as per the keyframe
-            for (var key in this._kfMapping){
+            for (var key in this._kfMapping) {
                 var pannerObjects = [];
                 var objs = this._kfMapping[key];
-                if (typeof objs === "string"){    // == attribute
+                if (typeof objs === "string") {
+                    // == attribute
                     pannerObjects = this.objects[objs].highpass;
-                }
-                else if (typeof objs === "object"){   // == array
-                    for (var i = 0; i < objs.length; i++){
+                } else if ((typeof objs === 'undefined' ? 'undefined' : _typeof(objs)) === "object") {
+                    // == array
+                    for (var i = 0; i < objs.length; i++) {
                         console.trace("Adding " + objs[i] + " to the pannerObject array");
                         pannerObjects.push(this.objects[objs[i]].highpass);
                     }
@@ -14348,20 +14174,20 @@ ObjectManager.prototype = {
                 $(this).triggerHandler('om_newTrackMapping', [key, objs]);
             }
         }
-        this._last_kfMapping = JSON.parse(JSON.stringify(this._kfMapping));  // making a "copy" and not a reference
+        this._last_kfMapping = JSON.parse(JSON.stringify(this._kfMapping)); // making a "copy" and not a reference
     },
 
-    _processCurrentKeyframes: function(){
-        for (var key in this._keyframes){
+    _processCurrentKeyframes: function _processCurrentKeyframes() {
+        for (var key in this._keyframes) {
             //console.log(key);
             var relTime = parseFloat(this.ctx.currentTime - this._startTime + parseFloat(key));
-            this._evts[key] = this._clock.setTimeout(this._buildKeyframeCallback(key, relTime),relTime);
+            this._evts[key] = this._clock.setTimeout(this._buildKeyframeCallback(key, relTime), relTime);
         }
     },
 
-    _buildKeyframeCallback: function(key, relTime){
+    _buildKeyframeCallback: function _buildKeyframeCallback(key, relTime) {
         var that = this;
-        return function(){
+        return function () {
             that._handleKeyframe(key);
             that._currentKeyframeIndex = parseFloat(key);
             console.debug('Keyframe ' + key + ' reached at context time: ' + relTime);
@@ -14379,22 +14205,21 @@ ObjectManager.prototype = {
     },
     */
 
-    _checkReadyStart: function(){
-        if (this._audiobed !== false){
+    _checkReadyStart: function _checkReadyStart() {
+        if (this._audiobed !== false) {
             return this._audiobed.canplay;
         } else {
             return true;
         }
     },
 
-
     /**
      * Sets RollOffFactor for all objects via
      * {@link module:bogJS~ObjectController#setRollOffFactor}
      * @param factor
      */
-    setRollOffFactor: function(factor){
-        for (var key in this.objects){
+    setRollOffFactor: function setRollOffFactor(factor) {
+        for (var key in this.objects) {
             this.objects[key].setRollOffFactor(factor);
         }
         this._triggerChange();
@@ -14405,8 +14230,8 @@ ObjectManager.prototype = {
      * {@link module:bogJS~ObjectController#setDistanceModel}
      * @param model
      */
-    setDistanceModel: function(model){
-        for (var key in this.objects){
+    setDistanceModel: function setDistanceModel(model) {
+        for (var key in this.objects) {
             this.objects[key].setDistanceModel(model);
         }
         this._triggerChange();
@@ -14417,8 +14242,8 @@ ObjectManager.prototype = {
      * {@link module:bogJS~ObjectController#setRefDistance}
      * @param refDistance
      */
-    setRefDistance: function(refDistance){
-        for (var key in this.objects){
+    setRefDistance: function setRefDistance(refDistance) {
+        for (var key in this.objects) {
             this.objects[key].setRefDistance(refDistance);
         }
         this._triggerChange();
@@ -14429,32 +14254,125 @@ ObjectManager.prototype = {
      * {@link module:bogJS~ObjectController#setMaxDistance}
      * @param maxDistance
      */
-    setMaxDistance: function(maxDistance){
-        for (var key in this.objects){
+    setMaxDistance: function setMaxDistance(maxDistance) {
+        for (var key in this.objects) {
             this.objects[key].setMaxDistance(maxDistance);
         }
         this._triggerChange();
     },
 
-    setHighpassFreq: function(freq){
-        for (var key in this.objects){
+    setHighpassFreq: function setHighpassFreq(freq) {
+        for (var key in this.objects) {
             this.objects[key].setHighpassFreq(freq);
         }
     },
 
-    _initSwitchGroup: function(groupName){
-        var item = this.interactiveInfo.switchGroup[groupName].default;
+    _initSwitchGroup: function _initSwitchGroup(groupName) {
+        var item = this.interactiveInfo.switchGroups[groupName].default;
         this.switchGroup(groupName, item);
     },
 
-    switchGroup: function(groupName, item){
-        var objects = Object.values(this.interactiveInfo.switchGroup[groupName].items);
-        for (var obj of objects){
-            this.objects[obj].setStatus(false);
+    switchGroup: function switchGroup(groupName, item) {
+        var objects = Object.values(this.interactiveInfo.switchGroups[groupName].items);
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+            for (var _iterator2 = objects[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var obj = _step2.value;
+
+                this.objects[obj].setStatus(false);
+            }
+        } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                    _iterator2.return();
+                }
+            } finally {
+                if (_didIteratorError2) {
+                    throw _iteratorError2;
+                }
+            }
         }
-        var active_obj = this.interactiveInfo.switchGroup[groupName].items[item];
+
+        var active_obj = this.interactiveInfo.switchGroups[groupName].items[item];
         console.info("SwitchGroup " + groupName + " enable " + active_obj);
         this.objects[active_obj].setStatus(true);
+    },
+
+    setInteractiveGain: function setInteractiveGain(groupName, dBValue) {
+        var minLogGain = parseFloat(this.interactiveInfo.gain[groupName].range[0]);
+        var maxLogGain = parseFloat(this.interactiveInfo.gain[groupName].range[1]);
+        var gainValue;
+        if (parseFloat(dBValue) > maxLogGain) {
+            gainValue = maxLogGain;
+        } else if (parseFloat(dBValue) < minLogGain) {
+            gainValue = minLogGain;
+        } else {
+            gainValue = dBValue;
+        }
+        // Crossfading
+        //var range = Math.abs(minLogGain) * 0.5 + maxLogGain * 0.5;
+        var gainGroup = Math.pow(10, gainValue * 0.5 / 20);
+        var gainOther = Math.pow(10, -1 * gainValue * 0.5 / 20);
+        var groupObjects = this.interactiveInfo.gain[groupName].objects;
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+            for (var _iterator3 = groupObjects[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                var obj = _step3.value;
+
+                this.objects[obj].setInteractiveGain(gainGroup);
+            }
+            // find other objects
+        } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                    _iterator3.return();
+                }
+            } finally {
+                if (_didIteratorError3) {
+                    throw _iteratorError3;
+                }
+            }
+        }
+
+        var otherObjects = _.difference(Object.keys(this.objects), groupObjects);
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
+
+        try {
+            for (var _iterator4 = otherObjects[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                var oth = _step4.value;
+
+                this.objects[oth].setInteractiveGain(gainOther);
+            }
+        } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                    _iterator4.return();
+                }
+            } finally {
+                if (_didIteratorError4) {
+                    throw _iteratorError4;
+                }
+            }
+        }
+
+        console.debug("Set group " + groupName + " gain to " + gainGroup + " and other objects to " + gainOther);
     },
 
     /**
@@ -14464,18 +14382,18 @@ ObjectManager.prototype = {
      * by ourself. The additional value of 0.000001 for x seems to be the
      * threshold for Chrome to change the rendering.
      */
-    _triggerChange: function(){
+    _triggerChange: function _triggerChange() {
         var pos = this.getListenerPosition();
         this.setListenerPosition(pos[0] + 0.000001, pos[1], pos[2]);
         this.setListenerPosition(pos[0], pos[1], pos[2]);
     }
 };
 
-
-
 module.exports = ObjectManager;
 
-},{"./channelorder_test":8,"./html5_player/core":10,"./media_controller":11,"./object":12,"./scene_reader":14,"jquery":2,"underscore":5,"waaclock":6}],14:[function(require,module,exports){
+},{"./channelorder_test":7,"./gain_controller":8,"./html5_player/core":9,"./media_controller":10,"./object":11,"./scene_reader":13,"jquery":2,"underscore":4,"waaclock":5}],13:[function(require,module,exports){
+"use strict";
+
 /**
  * @file scene_reader.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -14503,10 +14421,10 @@ window.$ = require('jquery');
  * @fires module:bogJS~SceneReader#scene_loaded
  *
  */
-var SceneReader = function(loaded_callback){
+var SceneReader = function SceneReader(loaded_callback) {
     //this.load(url);
     this.callback = loaded_callback || undefined;
-}
+};
 
 SceneReader.prototype = {
 
@@ -14516,24 +14434,24 @@ SceneReader.prototype = {
      * @param {string} url - URL to scene data target
      * @fires module:bogJS~SceneReader#scene_loaded
      */
-    load: function(url){
+    load: function load(url) {
         // we need to do this as within the anonymous success function of the ajax call,
         // 'this' will refer to the window object and NOT to the SceneReader instance!
         var that = this;
         $.ajax({
             type: "GET",
-	        url: url,
-    	    dataType: "text",
-	        success: function(text) {
+            url: url,
+            dataType: "text",
+            success: function success(text) {
                 that.parse(text);
-                if (that.callback !== undefined){
+                if (that.callback !== undefined) {
                     that.callback.call();
                 }
-	        }
+            }
         });
     },
 
-    parse: function(rawText) {
+    parse: function parse(rawText) {
         var commands = this._tokenize(rawText);
         var data = this._parseSpatdif(commands);
         var keyframes = data[0];
@@ -14544,9 +14462,9 @@ SceneReader.prototype = {
         var extraObjects = data[5];
         var interactiveInfo = data[6];
         var singleObjects = {};
-        for (var kf in extraObjects){
-            for (var group in groupObjects[kf]){
-                for (var el in groupObjects[kf][group]){
+        for (var kf in extraObjects) {
+            for (var group in groupObjects[kf]) {
+                for (var el in groupObjects[kf][group]) {
                     var obj = groupObjects[kf][group][el];
                     var idx = extraObjects[kf].indexOf(obj);
                     console.debug('Checking for double entry for object ' + obj);
@@ -14587,88 +14505,96 @@ SceneReader.prototype = {
          * @property {module:bogJS~interactiveInfo} interactiveInfo - 'Dictionary'
          * containing info for interactive objects and groups
          */
-        $(this).triggerHandler('scene_loaded', [keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo])
+        $(this).triggerHandler('scene_loaded', [keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo]);
     },
 
-    _tokenize: function(d){
+    _tokenize: function _tokenize(d) {
         var lines = [];
         var data = d.split('\n');
-        for (var i = 0; i < data.length; i++){
-            if (data[i].indexOf("/spatdif") === 0){   //String.prototype.startsWith() not yet widely supported
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].indexOf("/spatdif") === 0) {
+                //String.prototype.startsWith() not yet widely supported
                 var l = {};
                 var line = data[i].split(' ');
                 var command = line[0].split('/');
                 l.cmd = command.slice(1, command.length);
                 l.params = line.slice(1, line.length);
-                if (l.params.length === 1){
-                    l.params = l.params[0];  // avoids having an array for a single value
+                if (l.params.length === 1) {
+                    l.params = l.params[0]; // avoids having an array for a single value
                 }
-                lines[lines.length] = l;     // makes sure that we append the data at the end and won't skip indices
+                lines[lines.length] = l; // makes sure that we append the data at the end and won't skip indices
             }
         }
         return lines;
     },
 
-    _parseSpatdif: function(m){
+    _parseSpatdif: function _parseSpatdif(m) {
         var keyframes = {};
         var audioURLs = {};
         var sceneInfo = {};
         var interactiveInfo = {};
-        interactiveInfo.switchGroup = {};
+        interactiveInfo.switchGroups = {};
         interactiveInfo.gain = {};
         var groups = {};
         var extraObjects = {};
         var audiobeds = {};
         var keyframe = null;
         for (var i = 0; i < m.length; i++) {
-            if (m[i].cmd[0] === "spatdif"){  // darauf verzichten um die lesbarkeit des codes zu verbesern?
-                if (m[i].cmd[1] === "meta"){
+            if (m[i].cmd[0] === "spatdif") {
+                // darauf verzichten um die lesbarkeit des codes zu verbesern?
+                if (m[i].cmd[1] === "meta") {
                     var meta = m[i];
                     if (meta.cmd[3] === "name") {
                         sceneInfo.name = meta.params;
                     } else if (meta.cmd[2] === "objects") {
                         sceneInfo.object_count = meta.params;
-                    } else if ((meta.cmd[2] === "reference") && (meta.cmd[3] === "orientation")){
+                    } else if (meta.cmd[2] === "reference" && meta.cmd[3] === "orientation") {
                         sceneInfo.listener_orientation = this._parseFloatArray(meta.params);
-                    } else if ((meta.cmd[2] === "room") && (meta.cmd[3] === "origin")){
+                    } else if (meta.cmd[2] === "room" && meta.cmd[3] === "origin") {
                         sceneInfo.listener_position = this._parseFloatArray(meta.params);
-                    } else if ((meta.cmd[2] === "room") && (meta.cmd[3] === "dimension")){
+                    } else if (meta.cmd[2] === "room" && meta.cmd[3] === "dimension") {
                         sceneInfo.room_dimensions = this._parseFloatArray(meta.params);
-                    } else if ((meta.cmd[2] === "audiobed") && (meta.cmd[3] === "url")) {
+                    } else if (meta.cmd[2] === "audiobed" && meta.cmd[3] === "url") {
                         sceneInfo.audiobed_url = meta.params;
-                    } else if ((meta.cmd[2] === "audiobed") && (meta.cmd[3] === "tracks")) {
+                    } else if (meta.cmd[2] === "audiobed" && meta.cmd[3] === "tracks") {
                         sceneInfo.audiobed_tracks = meta.params;
                     } else if (meta.cmd[2] === "interactive") {
                         if (meta.cmd[3] === "switchGroup") {
                             if (meta.cmd[4] === "label") {
                                 var label = meta.params[0];
-                                interactiveInfo.switchGroup[label] = {};
-                                interactiveInfo.switchGroup[label].default = meta.params[1];
-                                interactiveInfo.switchGroup[label].items = {};
+                                interactiveInfo.switchGroups[label] = {};
+                                interactiveInfo.switchGroups[label].default = meta.params[1];
+                                interactiveInfo.switchGroups[label].items = {};
                             } else {
                                 var item_label = meta.params[0];
-                                interactiveInfo.switchGroup[label].items[item_label] = meta.params[1];
+                                interactiveInfo.switchGroups[label].items[item_label] = meta.params[1];
                             }
-                        } else if (meta.cmd[3] === "gain"){
-                            interactiveInfo.gain[meta.cmd[4]] = meta.params;
+                        } else if (meta.cmd[3] === "gain") {
+                            if (meta.cmd[4] === "label") {
+                                var label = meta.params[0];
+                                interactiveInfo.gain[label] = {};
+                                interactiveInfo.gain[label].range = [meta.params[1], meta.params[2]];
+                                interactiveInfo.gain[label].objects = [];
+                            } else {
+                                interactiveInfo.gain[label].objects.push(meta.params);
+                            }
                         }
                     }
-
                 } else if (m[i].cmd[1] === "time") {
                     keyframe = m[i].params;
                     keyframes[keyframe] = [];
-                } else if ((m[i].cmd[1] === "source") && (keyframe !== null)) {
+                } else if (m[i].cmd[1] === "source" && keyframe !== null) {
                     // ignore the commands until the first keyframe appears
                     var obj = m[i].cmd[2];
                     var cmd = m[i].cmd[3];
                     var params = m[i].params;
 
-                    if (cmd === "track_mapping"){
-                        if ((params.startsWith("bed_")) && (obj in audiobeds ===  false)){
+                    if (cmd === "track_mapping") {
+                        if (params.startsWith("bed_") && obj in audiobeds === false) {
                             audiobeds[obj] = params;
-                        } else if ((params.startsWith("bed_") === false) && (obj in audioURLs === false)) {
+                        } else if (params.startsWith("bed_") === false && obj in audioURLs === false) {
                             audioURLs[obj] = params;
-                            if (keyframe in extraObjects ===  false){
+                            if (keyframe in extraObjects === false) {
                                 extraObjects[keyframe] = [];
                             }
                             extraObjects[keyframe].push(obj);
@@ -14676,20 +14602,20 @@ SceneReader.prototype = {
                     }
 
                     if (cmd === "group") {
-                        if (keyframe in groups === false){
+                        if (keyframe in groups === false) {
                             groups[keyframe] = {};
                         }
-                        if (params in groups[keyframe] === false){
+                        if (params in groups[keyframe] === false) {
                             groups[keyframe][params] = [];
                         }
-                        if (groups[keyframe][params].indexOf(obj) === -1){
-                            groups[keyframe][params].push(obj)  // == groups.keyframe.params.push(obj)
+                        if (groups[keyframe][params].indexOf(obj) === -1) {
+                            groups[keyframe][params].push(obj); // == groups.keyframe.params.push(obj)
                             console.debug("Adding " + obj + " to group " + params + " at keyframe " + keyframe);
                         }
                     }
                     var triplet = {};
                     triplet.obj = obj;
-                    if (cmd === "active"){
+                    if (cmd === "active") {
                         cmd = "is_present";
                     }
                     triplet.cmd = cmd;
@@ -14701,19 +14627,18 @@ SceneReader.prototype = {
         return [keyframes, audioURLs, sceneInfo, groups, audiobeds, extraObjects, interactiveInfo];
     },
 
-    _parseFloatArray: function(array){
+    _parseFloatArray: function _parseFloatArray(array) {
         var tmp_array = [];
-        for (var n in array){
+        for (var n in array) {
             var number = parseFloat(array[n]);
-            if (!isNaN(number)){
+            if (!isNaN(number)) {
                 tmp_array[tmp_array.length] = number;
             }
         }
         return tmp_array;
     }
 
-}
-
+};
 
 module.exports = SceneReader;
 

@@ -1,9 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
+"use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "7ca6801 v0.3.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Sat Jul 01 2017 00:03:53 GMT+0200 (CEST)";
-
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "2cad7e1 v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Jul 03 2017 17:59:54 GMT+0200 (CEST)";
 
 // making the objects globally available
 window.UIManager = require('./src/ui');
@@ -25906,11 +25906,13 @@ return jQuery;
 }));
 
 },{}],7:[function(require,module,exports){
+'use strict';
+
 window.$ = require('jquery');
 require('jquery-ui-browserify');
 require('jquery-mousewheel')($);
 require('jquery.transit');
-var UIManager = function (om, url) {
+var UIManager = function UIManager(om, url) {
     this.om = om || new ObjectManager(url);
     this.bg = '';
     this.listener = '';
@@ -25919,27 +25921,18 @@ var UIManager = function (om, url) {
     this.btn_resetOrientation = '';
     this._resizeFactor = 50;
     this._iconsize = 32;
-    this.roomsize = [
-        500,
-        500
-    ];
+    this.roomsize = [500, 500];
     this._interactive = false;
     this._interval = 0.1;
     this._soloed = false;
     this._enableEventListener();
 };
 UIManager.prototype = {
-    start: function () {
+    start: function start() {
         if (this.om.start() === true) {
-            var roomsize = [
-                this.om.roomDimensions[0] * this._resizeFactor,
-                this.om.roomDimensions[1] * this._resizeFactor
-            ];
+            var roomsize = [this.om.roomDimensions[0] * this._resizeFactor, this.om.roomDimensions[1] * this._resizeFactor];
             this._setRoomSize(roomsize);
-            this._setListenerPosition([
-                this.om._listenerPosition[0],
-                this.om._listenerPosition[1]
-            ]);
+            this._setListenerPosition([this.om._listenerPosition[0], this.om._listenerPosition[1]]);
             this._addObjects();
             var that = this;
             if (!this._interactive) {
@@ -25974,21 +25967,21 @@ UIManager.prototype = {
             console.log('Object manager not yet ready.. waiting..');
         }
     },
-    stop: function () {
+    stop: function stop() {
         this.om.stop();
         this._removeObjects();
         $(this.btn_togglePanning).unbind();
         $(this.btn_toggleInteractive).unbind();
         return true;
     },
-    toggleInteractive: function () {
+    toggleInteractive: function toggleInteractive() {
         if (this._interactive === false) {
             this._enableInteractive();
         } else if (this._interactive === true) {
             this._disableInteractive();
         }
     },
-    enableDeviceOrientation: function () {
+    enableDeviceOrientation: function enableDeviceOrientation() {
         var that = this;
         if (window.DeviceOrientationEvent) {
             this._orientationMode = 'landscape';
@@ -26018,7 +26011,7 @@ UIManager.prototype = {
             console.info('Not supported on your device or browser.  Sorry.');
         }
     },
-    onOrientationChange: function () {
+    onOrientationChange: function onOrientationChange() {
         if (screen.orientation || window.orientation) {
             var orientation = screen.orientation || window.orientation;
             var angle = orientation.angle;
@@ -26030,25 +26023,22 @@ UIManager.prototype = {
             console.log('Orientation changed to ' + this._orientationMode);
         }
     },
-    resetDeviceOrientation: function () {
+    resetDeviceOrientation: function resetDeviceOrientation() {
         console.log('Resetting Device Orientation!');
         this._angle_offset += this.angle % 360;
         this.angle = 0;
         this._setListenerOrientation(this.angle);
         $(this.listener).css({ rotate: this.angle });
     },
-    _enableEventListener: function () {
+    _enableEventListener: function _enableEventListener() {
         $(this.om).on('om_newPosition', function (e, obj, pos) {
-            this._changeUIObjectPosition(obj, [
-                pos[0],
-                -1 * pos[2]
-            ]);
+            this._changeUIObjectPosition(obj, [pos[0], -1 * pos[2]]);
         }.bind(this));
         $(this.om).on('om_isActive', function (e, obj, bool) {
             this._displayObject(obj, bool);
         }.bind(this));
     },
-    _displayObject: function (obj, bool) {
+    _displayObject: function _displayObject(obj, bool) {
         if (bool) {
             $('#' + obj).show();
         } else {
@@ -26056,7 +26046,7 @@ UIManager.prototype = {
         }
         console.debug('Setting state of object ' + obj + ' to ' + bool);
     },
-    _enableInteractive: function () {
+    _enableInteractive: function _enableInteractive() {
         for (var key in this.om.objects) {
             $('#' + key).draggable('enable');
             $('#' + key).hover(function () {
@@ -26069,7 +26059,7 @@ UIManager.prototype = {
         this._interactive = true;
         this.om.interactive = true;
     },
-    _disableInteractive: function () {
+    _disableInteractive: function _disableInteractive() {
         for (var key in this.om.objects) {
             $('#' + key).draggable('disable');
             $('#' + key).off('dblclick');
@@ -26081,7 +26071,7 @@ UIManager.prototype = {
         this._interactive = false;
         this.om.interactive = false;
     },
-    _enableSolo: function () {
+    _enableSolo: function _enableSolo() {
         var that = this;
         for (var key in this.om.objects) {
             $('#' + key).dblclick(function (event, ui) {
@@ -26106,28 +26096,18 @@ UIManager.prototype = {
             });
         }
     },
-    _addObjects: function () {
+    _addObjects: function _addObjects() {
         for (var key in this.om.objects) {
             $(this.bg).append('<div class=\'irt_object\' id=\'' + key + '\'></div>');
             $('#' + key).append('<p class=\'irt_object_title\'>' + key + '</p>');
             var pos = this.om.objects[key].getPosition();
-            this._changeUIObjectPosition(key, [
-                pos[0],
-                -1 * pos[2]
-            ]);
+            this._changeUIObjectPosition(key, [pos[0], -1 * pos[2]]);
             var that = this;
             $('#' + key).draggable({
                 drag: _.throttle(function (event, ui) {
-                    var topleft = [
-                        ui.position.top,
-                        ui.position.left
-                    ];
+                    var topleft = [ui.position.top, ui.position.left];
                     var xy = that._topleft2xy(topleft);
-                    that.om.objects[event.target.id].setPosition([
-                        xy[0],
-                        0,
-                        -1 * xy[1]
-                    ]);
+                    that.om.objects[event.target.id].setPosition([xy[0], 0, -1 * xy[1]]);
                     console.debug('Drag event position: ' + topleft);
                 }, 50)
             });
@@ -26136,19 +26116,19 @@ UIManager.prototype = {
             }
         }
     },
-    _removeObjects: function () {
+    _removeObjects: function _removeObjects() {
         for (var key in this.om.objects) {
             $('#' + key).remove();
         }
     },
-    _setRoomSize: function (roomsize) {
+    _setRoomSize: function _setRoomSize(roomsize) {
         $(this.bg).css({
             'width': roomsize[0],
             'height': roomsize[1]
         });
         this.roomsize = roomsize;
     },
-    _setListenerPosition: function (xy) {
+    _setListenerPosition: function _setListenerPosition(xy) {
         var topleft = this._xy2topleft(xy);
         $(this.listener).css({
             'top': topleft[0],
@@ -26157,24 +26137,21 @@ UIManager.prototype = {
         console.info('New listener position: ' + topleft);
         var that = this;
         $(this.listener).draggable({
-            drag: function (event, ui) {
-                var topleft = [
-                    ui.position.top,
-                    ui.position.left
-                ];
+            drag: function drag(event, ui) {
+                var topleft = [ui.position.top, ui.position.left];
                 var xy = that._topleft2xy(topleft);
                 that.om.setListenerPosition(xy[0], xy[1], 0);
             }
         });
     },
-    _setListenerOrientation: function (angle) {
+    _setListenerOrientation: function _setListenerOrientation(angle) {
         var x = 10 * Math.sin(angle * (Math.PI / 180));
         var y = 0;
         var z = -10 * Math.cos(angle * (Math.PI / 180));
         console.info('Set angle ' + angle + ' to new listener orientation ' + x + ' ' + y + ' ' + z);
         this.om.setListenerOrientation(x, y, z);
     },
-    _changeUIObjectPosition: function (id, xy) {
+    _changeUIObjectPosition: function _changeUIObjectPosition(id, xy) {
         var topleft = this._xy2topleft(xy);
         $('#' + id).css({
             'top': topleft[0],
@@ -26182,43 +26159,31 @@ UIManager.prototype = {
         });
         console.debug('New position of ' + id + ' is: ' + topleft + '(xy: ' + xy + ')');
     },
-    _setObjPos: function (id, topleft) {
+    _setObjPos: function _setObjPos(id, topleft) {
         var xy = this._topleft2xy(topleft);
-        var xyz = [
-            xy[0],
-            xy[1],
-            0
-        ];
+        var xyz = [xy[0], xy[1], 0];
         this.om.objects[id].setPostion(xyz);
     },
-    _xy2topleft: function (xy) {
-        var topleft = [
-            -xy[1] * this._resizeFactor + this.roomsize[1] / 2,
-            xy[0] * this._resizeFactor + this.roomsize[0] / 2
-        ];
+    _xy2topleft: function _xy2topleft(xy) {
+        var topleft = [-xy[1] * this._resizeFactor + this.roomsize[1] / 2, xy[0] * this._resizeFactor + this.roomsize[0] / 2];
         return topleft;
     },
-    _topleft2xy: function (topleft) {
-        var xy = [
-            -(this.roomsize[1] / 2 - topleft[1]) / this._resizeFactor,
-            (this.roomsize[0] / 2 - topleft[0]) / this._resizeFactor
-        ];
+    _topleft2xy: function _topleft2xy(topleft) {
+        var xy = [-(this.roomsize[1] / 2 - topleft[1]) / this._resizeFactor, (this.roomsize[0] / 2 - topleft[0]) / this._resizeFactor];
         return xy;
     },
-    _angle2xy: function (angle) {
+    _angle2xy: function _angle2xy(angle) {
         var x = 10 * Math.sin(angle * (Math.PI / 180));
         var y = 0;
         var z = -10 * Math.cos(angle * (Math.PI / 180));
-        return [
-            x,
-            z
-        ];
+        return [x, z];
     },
-    _xyz2angle: function (xyz) {
+    _xyz2angle: function _xyz2angle(xyz) {
         var angle = Math.atan2(xyz[0], -xyz[2]) / Math.PI * 180;
         return angle;
     }
 };
 module.exports = UIManager;
+
 },{"jquery":6,"jquery-mousewheel":2,"jquery-ui-browserify":4,"jquery.transit":5}]},{},[1])
 //# sourceMappingURL=bogJS-ui-latest.js.map

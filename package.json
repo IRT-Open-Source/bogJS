@@ -19,24 +19,34 @@
   "browserify": {
     "transform": [
       "commitify",
-      "deamdify"
+      "deamdify",
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015"
+          ]
+        }
+      ]
     ]
   },
   "author": "Michael Weitnauer",
   "license": "MIT",
   "dependencies": {
-    "deamdify": "^0.2.0",
-    "jquery": "^2.2.0",
+    "jquery": "^2.2.4",
     "jquery-mousewheel": "^3.1.13",
     "jquery-ui-browserify": "^1.11.0-pre-seelio",
     "jquery.transit": "^0.9.12",
-    "loglevel": "^1.4.0",
     "underscore": "^1.8.3",
     "waaclock": "^0.5.3"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^7.3.0",
+    "browserify": "^14.4.0",
     "commitify": "git://github.com/kickermeister/commitify.git#master",
+    "deamdify": "^0.2.0",
     "jsdoc": "^3.4.0",
-    "simplifyify": "^2.0.1"
+    "simplifyify": "^2.0.4"
   }
 }
