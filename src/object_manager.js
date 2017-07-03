@@ -877,10 +877,10 @@ ObjectManager.prototype = {
         } else {
             gainValue = dBValue;
         }
-        // Use an equal-power crossfading curve:
-        var range = Math.abs(minLogGain) * 0.5 + maxLogGain * 0.5;
-        var gainGroup = Math.pow(10, (Math.sqrt((range + gainValue) * 0.5) / 20));
-        var gainOther = Math.pow(10, (Math.sqrt((range - gainValue) * 0.5) / 20));
+        // Crossfading
+        //var range = Math.abs(minLogGain) * 0.5 + maxLogGain * 0.5;
+        var gainGroup = Math.pow(10, (gainValue * 0.5) / 20);
+        var gainOther = Math.pow(10, ((-1 * gainValue) * 0.5) / 20);
         var groupObjects = this.interactiveInfo.gain[groupName].objects;
         for (var obj of groupObjects){
             this.objects[obj].setInteractiveGain(gainGroup);
