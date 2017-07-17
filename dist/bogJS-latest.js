@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "2cad7e1 v0.3.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Jul 03 2017 17:59:46 GMT+0200 (CEST)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "31d1294 v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Jul 17 2017 10:02:08 GMT+0200 (CEST)";
 
 // making the objects globally available
 window.$ = require('jquery'); // avoids that we use different jquery instances..
@@ -13860,6 +13860,8 @@ ObjectManager.prototype = {
      * @param {float} time - Desired playback position
      */
     setTime: function setTime(time) {
+        var set_audiobed_time = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
         // activate closest keyframe before time to avoid
         // missing / "forgetting" object commands..
         var times = Object.keys(this._keyframes);
@@ -13915,7 +13917,7 @@ ObjectManager.prototype = {
                 }
             }
         }
-        if (this._audiobed !== false) {
+        if (this._audiobed !== false && set_audiobed_time) {
             this._audiobed.setTime(time);
         }
     },
@@ -14179,7 +14181,7 @@ ObjectManager.prototype = {
 
     _processCurrentKeyframes: function _processCurrentKeyframes() {
         for (var key in this._keyframes) {
-            //console.log(key);
+            console.debug("Processing keyframe " + key);
             var relTime = parseFloat(this.ctx.currentTime - this._startTime + parseFloat(key));
             this._evts[key] = this._clock.setTimeout(this._buildKeyframeCallback(key, relTime), relTime);
         }

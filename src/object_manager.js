@@ -440,7 +440,7 @@ ObjectManager.prototype = {
      *
      * @param {float} time - Desired playback position
      */
-    setTime: function(time){
+    setTime: function(time, set_audiobed_time=true){
         // activate closest keyframe before time to avoid
         // missing / "forgetting" object commands..
         var times = Object.keys(this._keyframes);
@@ -496,7 +496,7 @@ ObjectManager.prototype = {
                 }
             }
         }
-        if (this._audiobed !== false){
+        if ((this._audiobed !== false) && (set_audiobed_time)){
             this._audiobed.setTime(time);
         }
     },
@@ -620,6 +620,7 @@ ObjectManager.prototype = {
                     }
                 }
                 else if (cmd === "is_present"){
+                    var state;
                     if (params === 0) {
                         state = false;
                     } else if (params === 1) {
@@ -762,7 +763,7 @@ ObjectManager.prototype = {
 
     _processCurrentKeyframes: function(){
         for (var key in this._keyframes){
-            //console.log(key);
+            console.debug("Processing keyframe " + key);
             var relTime = parseFloat(this.ctx.currentTime - this._startTime + parseFloat(key));
             this._evts[key] = this._clock.setTimeout(this._buildKeyframeCallback(key, relTime),relTime);
         }
