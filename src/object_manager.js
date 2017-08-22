@@ -276,7 +276,8 @@ ObjectManager.prototype = {
             var re = /\.[0-9a-z]{3,4}$/i;  // strips the file extension (must be 3 or 4 characters)
             var container = re.exec(url)[0];
             container = container.split('.').join(""); // removes dot from the string
-            var chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
+            var chOrderTest = new ChannelOrderTest(container,
+                                                   this._mediaElementTracks, this.ctx, this._channorder_root);
             $(chOrderTest).on('order_ready', function(e, order){
                 console.debug('Got channel order: ' + order);
                 this._chOrder = order;
