@@ -79,18 +79,20 @@ ChannelOrderTest.prototype = {
     _loadSound: function(url){
         this.audio = document.createElement('audio');
         this.audio.src = url;
-        this.audio.loop = false;
+        this.audio.loop = true;
         this.audio.load();
         this.mediaElement = this.ctx.createMediaElementSource(this.audio);
         this.mediaElement.connect(this._splitter);
         this.audio.play();
         var last_unique = [];
         this._counter = 0;
-        this.audio.onplay = function(){
+
+        // onplaying will be fired every time the audio begins
+        this.audio.onplaying = function(){
             var order = this.testChs();
             var unique = _.unique(order);
 
-            // the returned order should be identical for two conscutive calls
+            // the returned order should be identical for two consecutive calls
             // to make sure we have a reliable result
             if ((unique.length === this._tracks) && (_.isEqual(last_unique, unique))) {
                 console.info('Channel order detected: ' + order);
@@ -117,9 +119,6 @@ ChannelOrderTest.prototype = {
             }
             this._counter += 1;
         }.bind(this, last_unique);
-        this.audio.onended = function(){
-            this.audio.play();
-        }.bind(this);
     },
 
     /**
@@ -127,7 +126,6 @@ ChannelOrderTest.prototype = {
      * @protected
      */
     _getFreqData: function(){
-        this.audio.play();
         var freqBins = [];
         for (var i = 0; i < this._tracks; i++){
             // Float32Array should be the same length as the frequencyBinCount
@@ -136,7 +134,6 @@ ChannelOrderTest.prototype = {
             this.analysers[i].getFloatFrequencyData(freqBins[i]);
         }
         this.freqBins = freqBins;
-        //this.audio.pause();
     },
 
     /**
