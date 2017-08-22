@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "31d1294 v0.3.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Mon Jul 17 2017 10:02:08 GMT+0200 (CEST)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "facb0c0 v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Aug 22 2017 13:52:42 GMT+0200 (CEST)";
 
 // making the objects globally available
 window.$ = require('jquery'); // avoids that we use different jquery instances..
@@ -13540,6 +13540,7 @@ var ObjectManager = function ObjectManager(url, ctx, reader, mediaElement, audio
      */
     this._clock = new WAAClock(this.ctx);
     this._evts = {};
+    this._timer_evt = false;
     this._audioURLs = {};
     this._currentKeyframeIndex = 0;
     this._kfMapping = {};
@@ -13785,9 +13786,11 @@ ObjectManager.prototype = {
                 this._audiobed.play();
             }
             var that = this;
-            var evt = this._clock.setTimeout(function () {
-                console.debug(that.ctx.currentTime);
-            }, 1).repeat(1);
+            if (!this._timer_evt) {
+                this._timer_evt = this._clock.setTimeout(function () {
+                    console.debug(that.ctx.currentTime);
+                }, 1).repeat(1);
+            }
             this.playing = true;
             return true;
         } else {

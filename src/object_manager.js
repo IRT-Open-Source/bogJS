@@ -138,6 +138,7 @@ var ObjectManager = function(url, ctx, reader, mediaElement, audiobed_tracks, ch
      */
     this._clock = new WAAClock(this.ctx);
     this._evts = {};
+    this._timer_evt = false;
     this._audioURLs = {};
     this._currentKeyframeIndex = 0;
     this._kfMapping = {};
@@ -367,7 +368,11 @@ ObjectManager.prototype = {
                 this._audiobed.play();
             }
             var that = this;
-            var evt = this._clock.setTimeout(function(){console.debug(that.ctx.currentTime);}, 1).repeat(1);
+            if (!this._timer_evt){
+                this._timer_evt = this._clock.setTimeout(function(){
+                    console.debug(that.ctx.currentTime);
+                }, 1).repeat(1);
+            }
             this.playing = true;
             return true;
         } else {
