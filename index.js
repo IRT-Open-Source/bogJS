@@ -1,8 +1,5 @@
 
 // making the objects globally available
-window.$ = require('jquery');  // avoids that we use different jquery instances..
-window.jQuery = $;
-window.jquery = $;
 window.ChannelOrderTest = require('./src/channelorder_test');
 window.AudioData = require('./src/html5_player/core').AudioData;
 window.IRTPlayer = require('./src/html5_player/core').IRTPlayer;

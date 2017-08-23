@@ -9,7 +9,6 @@
  *
  */
 
-window.$ = require('jquery');
 var GainController = require('./gain_controller');
 
 /**

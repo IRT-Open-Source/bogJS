@@ -1,14 +1,14 @@
 # bogJS - JS framework for object-based audio rendering in browsers
 
-With the introduction of [HTML5](https://en.wikipedia.org/wiki/HTML5_Audio) and the 
-[Web Audio API](https://webaudio.github.io/web-audio-api/), 
-an important prerequisite was made for native rendering of object-based audio 
-in modern browsers. 
-Object-based audio is a revolutionary approach for creating and deploying 
+With the introduction of [HTML5](https://en.wikipedia.org/wiki/HTML5_Audio) and the
+[Web Audio API](https://webaudio.github.io/web-audio-api/),
+an important prerequisite was made for native rendering of object-based audio
+in modern browsers.
+Object-based audio is a revolutionary approach for creating and deploying
 interactive, personalised, scalable and immersive content, by representing it as
-a set of individual assets together with metadata describing their relationships 
-and associations. This allows media objects to be assembled in ground-breaking 
-ways to create new user experiences. 
+a set of individual assets together with metadata describing their relationships
+and associations. This allows media objects to be assembled in ground-breaking
+ways to create new user experiences.
 
 ## Demo
 See bogJS in action: http://lab.irt.de/demos/taar/interaktiv/
@@ -16,6 +16,11 @@ See bogJS in action: http://lab.irt.de/demos/taar/interaktiv/
 
 ## Basic usage and sample scene
 ```javascript
+<script
+  src="http://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+
 <script src="dist/bogJS-latest.js"></script>
 <!-- Only if you want to use the UI relevant parts: -->
 <script src="dist/bogJS-ui-latest.js"></script>
@@ -73,11 +78,11 @@ om = new ObjectManager('path/to/sceneFile.spatdif');
 ## Installation
 #### Using the latest version
 For your convenience, the dist/ folder contains the latest build files of
-bogJS. 
+bogJS.
 
 #### Building by yourself
-You only need [npm](https://www.npmjs.com/) to build this framework. 
-Once you have npm installed, you must run 
+You only need [npm](https://www.npmjs.com/) to build this framework.
+Once you have npm installed, you must run
 
 ```shell
 npm install
@@ -86,8 +91,8 @@ to install the required dependencies.
 
 Now, you can build the project with several commands:
 
-To build and bundle the whole project, run this command in the project folder. 
-This will create another subfolder "dist/" with the files as follows: 
+To build and bundle the whole project, run this command in the project folder.
+This will create another subfolder "dist/" with the files as follows:
 
 ```shell
 npm run build
@@ -103,7 +108,7 @@ npm run build
 ```
 
 
-To immediately build every change in one of the source files, use this command. 
+To immediately build every change in one of the source files, use this command.
 The _core_ bundle will then be constantly updated in dist/bogJS-dev.js
 ```shell
 npm run watch
@@ -112,8 +117,8 @@ npm run watch
 ```
 
 
-To build and bundle a new relese version of the project, use this command. The 
-files will be created under "dist/": 
+To build and bundle a new relese version of the project, use this command. The
+files will be created under "dist/":
 
 ```shell
 npm run build-release
@@ -127,15 +132,15 @@ npm run build-release
 --> bogJS-ui-vX.X.X.min.js
 --> bogJS-ui-vX.X.X.min.js.map
 ```
-Note: This command will also add a new Git tag with increased patch number and 
+Note: This command will also add a new Git tag with increased patch number and
 will also update the package.json file accordingly. To increase the version tag
-with a minor or even major, execute 
+with a minor or even major, execute
 
 ```
 npm version minor
 ```
 
-or 
+or
 
 ```
 npm version major
@@ -153,7 +158,7 @@ The default folder for the generated documentation is doc/ .
 
 
 ## Version Info
-With every build process, the version info is included to the bundle and saved 
+With every build process, the version info is included to the bundle and saved
 as global javascript variables
 ```javascript
 __BROWSERIFY_META_DATA__CREATED_AT
@@ -166,7 +171,7 @@ __BROWSERIFY_META_DATA__GIT_VERSION
 ## Basic concepts
 #### The scene file
 All object and scene relevant information is stored and read from a scene
-file. The format currently used is kind of a OSC string combined with 
+file. The format currently used is kind of a OSC string combined with
 [SpatDIF](http://www.spatdif.org/) commands.
 
 The SceneReader class can be replaced as long as the ObjectManager class
@@ -181,8 +186,8 @@ The following parameters can be currently assigned to the objects:
 - Gain [float]: Values for the gain of the audio signal, connected to the
   PannerNode. Values must be between 0 and 1.
 - Position [float, cartesian, right-hand]:
-  X, Y and Z values represent the position of the objects. See 
-  [here](https://webaudio.github.io/web-audio-api/#the-audiolistener-interface) 
+  X, Y and Z values represent the position of the objects. See
+  [here](https://webaudio.github.io/web-audio-api/#the-audiolistener-interface)
   for further info regarding the coordinate system.
 - Interactive [boolean]: This parameter is intended to be used if the object
   shall or shall not offer any interactive usage by the user. Example use case might be
@@ -190,7 +195,7 @@ The following parameters can be currently assigned to the objects:
 - Active [boolean]: This parameter can be used if the object is in the scene
   but should not be heard. It is kind of similar to the gain parameter.
 
-It is further planned to implement more sophisticated parameters of 
+It is further planned to implement more sophisticated parameters of
 [ADM](https://www.itu.int/rec/R-REC-BS.2076/en) in the future.
 
 #### To load and play audio signals, you can use three different options:
@@ -200,7 +205,7 @@ It is further planned to implement more sophisticated parameters of
   built-in decodeAudioData() function. The representation of those signals will
   be a AudioBufferSouceNode. The bogJS wrapper for this is the AudioData
   class. A typical use case would be a effect or speech object.
-- Multiple single objects that have the identical duration and that shall be 
+- Multiple single objects that have the identical duration and that shall be
   played back simultaneaously. For those objects, there is a dedicated class
   (IRTPlayer) which can or should be used for this purpose. The IRTPlayer
   class uses several AudioData instances to load and play files.
@@ -211,43 +216,43 @@ It is further planned to implement more sophisticated parameters of
   used for this purpose and connected to the Web Audio API via a
   MediaElementSourceNode. The media file or stream can have multiple channels.
   Depending on the browser and codec, different maximum track numbers are
-  possible. More than eight channels are currently only possible with a .wav 
+  possible. More than eight channels are currently only possible with a .wav
   container. See also [here](./tools/Multichannel-Order_Browsertest.xlsx).
 
 #### The channel order detection class
 If you use an audio bed for your scene, the ChannelOrderTest() class is used to
 detect the order of the decoded channels. To make use of this functionality,
-you have to encode [these](http://akamai-progressive.irt.de/demos/bogJS/channel_order/channelOrder_testset.zip) 
+you have to encode [these](http://akamai-progressive.irt.de/demos/bogJS/channel_order/channelOrder_testset.zip)
 test files with your preferred encoder and settings. The test set contains
 uncompressed wav files from 2 channels up to 16 chs with a duration of 48000
 samples (1 second@48kHz). For each channel, a different sinus tone is used
 to detect the order after the encoding and decoding again.
-Further, you need to upload those files to a folder on the server where the 
-HTML file using bogJS is located. Otherwise you will likely run into a CORS 
+Further, you need to upload those files to a folder on the server where the
+HTML file using bogJS is located. Otherwise you will likely run into a CORS
 issue.
 For OS X user, there is a encoding bash script enclosed under /tools.
 
 ```javascript
-/* Simple example */ 
-var ch = new ChannelOrderTest("mp4", 6); 
-ch.testChs(); 
-// -> [0, 2, 1, 4, 5, 3] 
+/* Simple example */
+var ch = new ChannelOrderTest("mp4", 6);
+ch.testChs();
+// -> [0, 2, 1, 4, 5, 3]
 
-/* Advanced example */ 
-var ctx = new AudioContext(); 
-var ch; 
-$(ch).on('order_ready', function(e, order){ 
-    console.log("Got channel order: " + order); 
-    doSomething(); 
-}); 
-ch = new ChannelOrderTest("ogg", 4, ctx, "path/to/testfiles/"); 
+/* Advanced example */
+var ctx = new AudioContext();
+var ch;
+$(ch).on('order_ready', function(e, order){
+    console.log("Got channel order: " + order);
+    doSomething();
+});
+ch = new ChannelOrderTest("ogg", 4, ctx, "path/to/testfiles/");
 // -> Got channel order: [0, 3, 2, 1]
 ```
 
 #### Container and file extensions
-If no file extension is given in the scene file, the AudioData() class and 
+If no file extension is given in the scene file, the AudioData() class and
 the ObjectManager() class will firstly detect the capabilities of the used
-browser and then try to load the given file with the preferred extension. 
+browser and then try to load the given file with the preferred extension.
 The order can be read and changed [here](./src/html5_player/core.js):
 1. .mp4
 2. .opus
@@ -257,16 +262,16 @@ The order can be read and changed [here](./src/html5_player/core.js):
 
 #### Interpolation
 Especially for object movements, we need interpolated position updates of the
-values. The Web Audio API offers with the [AudioParam](https://webaudio.github.io/web-audio-api/#AudioParam) 
+values. The Web Audio API offers with the [AudioParam](https://webaudio.github.io/web-audio-api/#AudioParam)
 interface the possibility to do this in certain ways. Unfortunately, the
 PannerNode (used for object positioning) does not support this interface. Only
 the new SpatialPannerNode will support this. Once the major browser support
 the SpatialPannerNode, it will be implemented here. As this might happen in the
 near future, I decided not to implement any interpolation logic as it will be
-integrated shortly anyway. Hence, you need to interpolate the object positions 
+integrated shortly anyway. Hence, you need to interpolate the object positions
 by yourself until this is fixed.
 
-For other object parameters (currently only Gain), the framework basically 
+For other object parameters (currently only Gain), the framework basically
 offers interpolation features, but I recommend not to mix them.
 
 #### Timing
@@ -371,9 +376,9 @@ grouped objects with changing positions and other settings over time.
 Michael Weitnauer (<weitnauer@irt.de>), Michael Meier (<meier@irt.de>)
 
 ## Acknowledgement
-Parts of this framework were developed in the European collaborative research 
-project [ORPHEUS](http://orpheus-audio.eu). This project has received funding 
-from the European Union's Horizon 2020 research and innovation programme under 
+Parts of this framework were developed in the European collaborative research
+project [ORPHEUS](http://orpheus-audio.eu). This project has received funding
+from the European Union's Horizon 2020 research and innovation programme under
 grant agreement No 687645.
 Follow ORPHEUS on Twitter: [@ORPHEUS_AUDIO](https://twitter.com/ORPHEUS_AUDIO)
 
@@ -381,7 +386,6 @@ Follow ORPHEUS on Twitter: [@ORPHEUS_AUDIO](https://twitter.com/ORPHEUS_AUDIO)
 This framework is published under the [MIT](./LICENSE) License.
 
 ## 3rd Party Libraries used for this Project
-- [jQuery](https://github.com/jquery/jquery)
 - [jQuery mousewheel](https://github.com/jquery/jquery-mousewheel)
 - [jQuery UI](https://github.com/jquery/jquery-ui)
 - [jQuery Transit](https://github.com/rstacruz/jquery.transit)

@@ -9,9 +9,6 @@
  *
  */
 
-window.$ = require('jquery');
-
-
 /**
  * GainController
  * @constructor

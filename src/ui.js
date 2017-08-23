@@ -9,7 +9,6 @@
  */
 
 //var _ = require('underscore');
-window.$ = require('jquery');
 require('jquery-ui-browserify');
 //require('jquery-ui/ui/widgets/mouse');
 //require('jquery-ui/ui/widgets/draggable');

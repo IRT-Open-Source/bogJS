@@ -39,8 +39,6 @@
  *
  */
 
-window.$ = require('jquery');
-
 
 /**
  * Represents AudioData class which has all the logic to control an

@@ -68,7 +68,6 @@
  * audiobeds =  {Bed0: "bed_0", Bed1: "bed_1", Bed2: "bed_2", Bed3: "bed_3", Bed4: "bed_4"}
  */
 
-window.$ = require('jquery');
 window._ = require('underscore');
 var WAAClock = require('waaclock');
 var ChannelOrderTest = require('./channelorder_test');

@@ -11,7 +11,6 @@
  * @callback loaded_callback
  */
 
-window.$ = require('jquery');
 
 /**
  * Represents SceneReader class. Will load and parse scene data from URL for the

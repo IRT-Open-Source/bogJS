@@ -9,7 +9,6 @@
  */
 
 
-window.$ = require('jquery');
 var _ = require('underscore');
 
 
