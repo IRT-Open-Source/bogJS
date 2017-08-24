@@ -156,6 +156,14 @@ ChannelOrderTest.prototype = {
             normalized_indices[i] = _.indexOf(sorted_indices, indices[i]);
         }
         return normalized_indices;
+    },
+
+    /**
+    * Explicit play function for mobile devices which will not start the media
+    * element automatically without user gesture.
+    */
+    playAudio: function(){
+        this.audio.play();
     }
 };
 
