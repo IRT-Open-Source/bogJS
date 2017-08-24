@@ -275,9 +275,9 @@ ObjectManager.prototype = {
             var re = /\.[0-9a-z]{3,4}$/i;  // strips the file extension (must be 3 or 4 characters)
             var container = re.exec(url)[0];
             container = container.split('.').join(""); // removes dot from the string
-            var chOrderTest = new ChannelOrderTest(container,
+            this._chOrderTest = new ChannelOrderTest(container,
                                                    this._mediaElementTracks, this.ctx, this._channorder_root);
-            $(chOrderTest).on('order_ready', function(e, order){
+            $(this._chOrderTest).on('order_ready', function(e, order){
                 console.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
@@ -292,7 +292,7 @@ ObjectManager.prototype = {
                     this.objects["Bed"+order[i]].setAudio(this._audiobed.gainController[i]);
                 }
             }.bind(this));
-            var chOrder = chOrderTest.testChs();
+            var chOrder = this._chOrderTest.testChs();
         }
 
         for (var obj in this._audiobedTracks){
