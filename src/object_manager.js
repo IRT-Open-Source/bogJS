@@ -271,7 +271,12 @@ ObjectManager.prototype = {
                 $(document).triggerHandler('om_ended');
                 om.stop();
             }.bind(this));
-            var url = this._audiobed._mediaElement.src;
+            var url = "";
+            if (this._audiobed._mediaElement.src !== ""){
+                url = this._audiobed._mediaElement.src;
+            } else {
+                url = this._audiobed._mediaElement.currentSrc;
+            }
             var re = /\.[0-9a-z]{3,4}$/i;  // strips the file extension (must be 3 or 4 characters)
             var container = re.exec(url)[0];
             container = container.split('.').join(""); // removes dot from the string
