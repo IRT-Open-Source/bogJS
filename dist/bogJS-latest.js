@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "fa7af6d v0.3.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Wed Aug 23 2017 15:53:55 GMT+0200 (CEST)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "6f5679e v0.3.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Aug 29 2017 11:45:25 GMT+0200 (CEST)";
 
 // making the objects globally available
 window.ChannelOrderTest = require('./src/channelorder_test');
@@ -2161,6 +2161,14 @@ ChannelOrderTest.prototype = {
             normalized_indices[i] = _.indexOf(sorted_indices, indices[i]);
         }
         return normalized_indices;
+    },
+
+    /**
+    * Explicit play function for mobile devices which will not start the media
+    * element automatically without user gesture.
+    */
+    playAudio: function playAudio() {
+        this.audio.play();
     }
 };
 
@@ -3848,12 +3856,17 @@ ObjectManager.prototype = {
                 $(document).triggerHandler('om_ended');
                 om.stop();
             }.bind(this));
-            var url = this._audiobed._mediaElement.src;
+            var url = "";
+            if (this._audiobed._mediaElement.src !== "") {
+                url = this._audiobed._mediaElement.src;
+            } else {
+                url = this._audiobed._mediaElement.currentSrc;
+            }
             var re = /\.[0-9a-z]{3,4}$/i; // strips the file extension (must be 3 or 4 characters)
             var container = re.exec(url)[0];
             container = container.split('.').join(""); // removes dot from the string
-            var chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
-            $(chOrderTest).on('order_ready', function (e, order) {
+            this._chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
+            $(this._chOrderTest).on('order_ready', function (e, order) {
                 console.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
@@ -3868,7 +3881,7 @@ ObjectManager.prototype = {
                     this.objects["Bed" + order[i]].setAudio(this._audiobed.gainController[i]);
                 }
             }.bind(this));
-            var chOrder = chOrderTest.testChs();
+            var chOrder = this._chOrderTest.testChs();
         }
 
         for (var obj in this._audiobedTracks) {

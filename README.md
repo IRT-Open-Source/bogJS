@@ -11,7 +11,7 @@ and associations. This allows media objects to be assembled in ground-breaking
 ways to create new user experiences.
 
 ## Demo
-See bogJS in action: http://lab.irt.de/demos/taar/interaktiv/
+See bogJS in action: https://lab.irt.de/demos/object-based-audio/interactive/
 
 
 ## Basic usage and sample scene
