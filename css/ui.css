@@ -56,6 +56,18 @@
     right: 5px;
 }
 
+.irt_resetOrientation{
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    bottom: 5px;
+    right: 74px;
+}
+
+.irt_resetOrientation:hover{
+    cursor: pointer;
+}
+
 .irt_switchPanningMode:hover{
     cursor: pointer;
 }
@@ -123,5 +135,3 @@
 .btn_stop_disabled {
     background-image: url("../img/stop_disabled.png");
 }
-
-

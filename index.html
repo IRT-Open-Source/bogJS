@@ -23,10 +23,10 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-    
+
     <link rel="stylesheet" href="css/jquery-ui.min.css">
     <link href="css/ui.css" type="text/css" rel="stylesheet">
- 
+
     <!--
     <script src="js/jquery-1.10.2.js"></script>
     <script src="js/jquery-ui.min.js"></script>
@@ -69,22 +69,22 @@
         </div>
         <!-- /.container -->
     </nav>
-    
-    <a id="oba" class="anchor_section"></a> 
+
+    <a id="oba" class="anchor_section"></a>
     <!-- Page Content -->
     <div class="container">
         <div class="row">
             <div class="col-md-12">
                 <h1>Object-based audio</h1>
                 <p>
-                Object-based audio is a revolutionary approach for creating and 
-                deploying interactive, personalised, scalable and immersive 
-                content, by representing it as a set of individual assets 
-                together with metadata describing their relationships and 
-                associations. 
-                This allows media objects to be assembled in ground-breaking ways to 
-                create new user experiences. With the introduction of HTML5 
-                and the Web Audio API, an important prerequisite was made for 
+                Object-based audio is a revolutionary approach for creating and
+                deploying interactive, personalised, scalable and immersive
+                content, by representing it as a set of individual assets
+                together with metadata describing their relationships and
+                associations.
+                This allows media objects to be assembled in ground-breaking ways to
+                create new user experiences. With the introduction of HTML5
+                and the Web Audio API, an important prerequisite was made for
                 native rendering of object-based audio in modern browsers.
                 <!-- TODO: inster links to general information about oba-->
                 </p>
@@ -92,8 +92,8 @@
         </div>
     </div>
     <!-- /.container -->
-    
-    <a id="howto" class="anchor_section"></a>    
+
+    <a id="howto" class="anchor_section"></a>
     <!-- Page Content -->
     <div class="container irt_section">
         <div class="row">
@@ -107,16 +107,16 @@
                 HTML5 and the Web Audio API. This is the case for all major
                 browsers (Firefox, Chrome, Safari and Opera). Only Internet
                 Explorer supports the Web Audio API only in Edge with Windows
-                10. You can check the support by visiting 
+                10. You can check the support by visiting
                 <a href="http://caniuse.com/#feat=audio-api">this page</a>.
                 </p>
                 <h3>Starting the demo</h3>
                 <p>
-                To start the demo, choose a scene from the list and press the play 
-                button left of it once the audio files are loaded. Depending 
-                on the capabilities of your browser, either m4a, ogg or mp3 
-                files will be downloaded. If your internet connection is rather slow 
-                and / or the audio files are rather large, it might take a while 
+                To start the demo, choose a scene from the list and press the play
+                button left of it once the audio files are loaded. Depending
+                on the capabilities of your browser, either m4a, ogg or mp3
+                files will be downloaded. If your internet connection is rather slow
+                and / or the audio files are rather large, it might take a while
                 until you can start the demo.
                 </p>
                 <h3>Choosing the rendering mode</h3>
@@ -126,7 +126,7 @@
                 corner.
                 <br>
                 Note: If you are using the Internet Explorer "Edge", only
-                Stereo rendering is supported currently. 
+                Stereo rendering is supported currently.
                 </p>
             </div>
             <div class="col-md-6">
@@ -134,10 +134,10 @@
                 <p>
                 You can <b>rotate the listener's orientation</b> by positioning the
                 mouse above the listener's icon and rotate the mousewheel up
-                or down. 
+                or down.
                 <br>
                 One can also <b>change the position of the listener</b> within the
-                scene by moving it while pressing the mouse button. 
+                scene by moving it while pressing the mouse button.
                 </p>
                 <h3>Object interaction</h3>
                 <p>
@@ -152,7 +152,7 @@
         </div>
     </div>
     <!-- /.container -->
-    
+
     <a id="demo" class="anchor_section"></a>
     <!-- Page Content -->
     <div class="container irt_section">
@@ -161,7 +161,7 @@
                 <h1>Demo</h1>
                 <p>
                 </p>
-                <div class="col-md-3"> 
+                <div class="col-md-3">
                     <button class="btn btn-primary irt_btn_basic" type="button" id="btn_start"></button>
                     <div class="dropdown">
                         <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Choose scene
@@ -172,14 +172,14 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <div class="col-md-9">
                     <div class="OM_area">
                         <div class="irt_msg panel panel-default" id="status_msg" style="display:block">
                             <p>No scene selected</p>
                             <div class="progress">
                                 <div id="loaded_progress" class="progress-bar progress-bar-striped active"
-                                                          role="progressbar" aria-valuenow="100" 
+                                                          role="progressbar" aria-valuenow="100"
                                                           aria-valuemin="0" aria-valuemax="100"
                                                           style="width: 100%; display: none">
                                 </div>
@@ -232,7 +232,7 @@
                         });
 
                         om = new ObjectManager("scenes/"+sceneFile);
-                        ui = new UIManager(om, 'foo', 0);
+                        ui = new UIManager(om);
                         ui.bg = ".OM_area";
                         ui.listener = ".irt_listener";
                         ui.btn_togglePanning = ".irt_switchPanningMode";
@@ -245,7 +245,7 @@
                                     $(".irt_listener").hide();
                                     $("#btn_start").toggleClass("btn_stop btn_start");
                                 }
-                            } 
+                            }
                             else if (om.playing == false) {
                                 if (ui.start()){
                                     console.log("Starting scene");
@@ -254,12 +254,12 @@
                                 }
                             }
                         });
-                    } 
+                    }
                 </script>
             </div>
         </div>
     </div>
-    <!-- /.container -->   
+    <!-- /.container -->
 
     <br>
     <!-- Bootstrap Core JavaScript -->

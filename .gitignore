@@ -12,3 +12,5 @@ dist/*
 doc
 demos/
 js/
+node_modules
+yarn.lock

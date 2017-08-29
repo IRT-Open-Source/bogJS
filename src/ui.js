@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /**
  * @file ui.js
  * @author Michael Weitnauer [weitnauer@irt.de]
@@ -7,10 +8,10 @@
  * @module bogJS
  */
 
-//var log = require('loglevel');
 //var _ = require('underscore');
-window.$ = require('jquery');
-require('jquery-ui/draggable');
+require('jquery-ui-browserify');
+//require('jquery-ui/ui/widgets/mouse');
+//require('jquery-ui/ui/widgets/draggable');
 require('jquery-mousewheel')($);
 require('jquery.transit');
 //var ObjectManager = require('./object_manager');
@@ -26,16 +27,14 @@ require('jquery.transit');
  * module:bogJS~ObjectManager} instance
  * @param {String} url - URL to scene file. If no ObjectManager instance is
  * passed, the URL must be passed.
- * @param {number} [loglevel=1] - logging level
  */
-var UIManager = function(om, url, loglevel){
-    var loglevel = loglevel || log.levels.DEBUG;
-    log.setLevel(loglevel);
+var UIManager = function(om, url){
     this.om = om || new ObjectManager(url);
     this.bg = "";
     this.listener = "";
     this.btn_togglePanning = "";
     this.btn_toggleInteractive = "";
+    this.btn_resetOrientation = "";
     this._resizeFactor = 50;
     this._iconsize = 32;
     this.roomsize = [500, 500];
@@ -44,7 +43,7 @@ var UIManager = function(om, url, loglevel){
     this._soloed = false;
 
     this._enableEventListener();
-}
+};
 
 UIManager.prototype = {
 
@@ -56,10 +55,10 @@ UIManager.prototype = {
      * be returned.
      */
     start: function(){
-        if (this.om.start() == true) {
+        if (this.om.start() === true) {
             var roomsize = [this.om.roomDimensions[0] * this._resizeFactor, this.om.roomDimensions[1] * this._resizeFactor];
             this._setRoomSize(roomsize);
-            this._setListenerPosition([this.om._listenerPosition[0], 
+            this._setListenerPosition([this.om._listenerPosition[0],
                                       this.om._listenerPosition[1]]);
             this._addObjects();
             var that = this;
@@ -74,16 +73,20 @@ UIManager.prototype = {
                 that.toggleInteractive();
                 $(this).find('img').toggle();
             });
+            $(this.btn_resetOrientation).click(function(){
+                that.resetDeviceOrientation();
+            });
             $(this.listener).mousewheel(function(event, delta){
                 var angle = that._xyz2angle(that.om.getListenerOrientation());
+                var new_angle = angle;
                 if(delta < 0) {
-                    var new_angle = angle - 5;
+                    new_angle = angle - 5;
                 } else {
-                    var new_angle = angle + 5;
+                    new_angle = angle + 5;
                 }
                 that._setListenerOrientation(new_angle);
                 $('.irt_listener').css({rotate: new_angle});
-                return false;         // this will prevent window scrolling 
+                return false;         // this will prevent window scrolling
             });
             return true;
         } else {
@@ -111,54 +114,95 @@ UIManager.prototype = {
      * objects so far.
      */
     toggleInteractive: function(){
-        if (this._interactive == false){
-            this._enableInteractive();    
+        if (this._interactive === false){
+            this._enableInteractive();
         }
-        else if (this._interactive == true){
+        else if (this._interactive === true){
             this._disableInteractive();
         }
     },
-    
+
     /**
-     * Enables the device orientation for rotation on mobiles. Is rather 
+     * Enables the device orientation for rotation on mobiles. Is rather
      * untested and may be improved in the future.
      *
      */
     enableDeviceOrientation: function(){
         var that = this;
         if (window.DeviceOrientationEvent) {
+            this._orientationMode = 'landscape';
+            this._angle_offset = 0;
+            this.angle = 0;
+            this._last_angle = 180;
+            this._firstCallFlag = true;
+            this.onOrientationChange();
+            window.addEventListener("orientationchange", this.onOrientationChange.bind(this), false);
             window.addEventListener('deviceorientation', function(eventData) {
-                var dir = -1 * Math.round(eventData.alpha);
-                that._setListenerOrientation(dir);
-                $(this.listener).css({rotate: dir});
-            }, false);
+                var raw_angle = -1 * Math.round(eventData.alpha);
+                this.angle = (raw_angle - this._angle_offset) % 360;
+                if ((this._orientationMode === 'landscape') && (eventData.gamma < 0)){
+                    this.angle += 180;
+                }
+                if (this._firstCallFlag){
+                    this.resetDeviceOrientation();
+                    this._firstCallFlag = false;
+                }
+                // the following query should prevent too fast updates of the BRIR change while turning
+                if ((this._last_angle - this.angle >= 3) || (this._last_angle - this.angle <= -3)){
+                    this._setListenerOrientation(this.angle);
+                    $(this.listener).css({rotate: this.angle});
+                    this._last_angle = this.angle;
+                }
+            }.bind(this), false);
         } else {
-            log.info("Not supported on your device or browser.  Sorry.");
+            console.info("Not supported on your device or browser.  Sorry.");
         }
     },
-     
+
+    onOrientationChange: function(){
+        // Announce the new orientation number
+        if ((screen.orientation)|| (window.orientation)){
+            var orientation = screen.orientation || window.orientation;
+            var angle = orientation.angle;
+            if ((angle === 0) || (angle === 180)){
+                this._orientationMode = "portrait";
+            } else if ((angle === 90) || (angle === 270)) {
+                   this._orientationMode = "landscape";
+            }
+            console.log("Orientation changed to " + this._orientationMode);
+        }
+    },
+
+    resetDeviceOrientation: function(){
+        console.log("Resetting Device Orientation!");
+        this._angle_offset += this.angle % 360;
+        this.angle = 0;
+        this._setListenerOrientation(this.angle);
+        $(this.listener).css({rotate: this.angle});
+    },
+
     _enableEventListener: function(){
         $(this.om).on('om_newPosition', function(e, obj, pos){
             this._changeUIObjectPosition(obj, [pos[0], -1 * pos[2]]);
         }.bind(this));
-        
+
         $(this.om).on('om_isActive', function(e, obj, bool){
             this._displayObject(obj, bool);
         }.bind(this));
 
     },
-  
+
     _displayObject: function(obj, bool){
         if (bool){
             $("#" + obj).show();
         } else{
              $("#" + obj).hide();
         }
-        log.debug("Setting state of object " + obj + ' to ' + bool);
+        console.debug("Setting state of object " + obj + ' to ' + bool);
     },
 
     _enableInteractive: function(){
-        for (key in this.om.objects){
+        for (var key in this.om.objects){
             $("#"+key).draggable('enable');
             $("#"+key).hover(function() {
                 $(this).css("cursor","move");
@@ -172,7 +216,7 @@ UIManager.prototype = {
     },
 
     _disableInteractive: function(){
-        for (key in this.om.objects){
+        for (var key in this.om.objects){
             $("#"+key).draggable('disable');
             $("#"+key).off('dblclick');
             $("#"+key).hover(function() {
@@ -190,19 +234,19 @@ UIManager.prototype = {
             $("#"+key).dblclick(function(event, ui){
                 if (that._soloed !== event.target.id){
                     for (var key in that.om.objects){
-                        log.debug("Muting " + key);
-                        $("#"+key).addClass("irt_object_disabled")
+                        console.debug("Muting " + key);
+                        $("#"+key).addClass("irt_object_disabled");
                         that.om.objects[key].setStatus(false);
                     }
-                    $("#"+event.target.id).removeClass("irt_object_disabled")
-                    log.debug("Unmuting " + event.target.id);
+                    $("#"+event.target.id).removeClass("irt_object_disabled");
+                    console.debug("Unmuting " + event.target.id);
                     that.om.objects[event.target.id].setStatus(true);
                     that._soloed = event.target.id;
                 } else {
-                    for (var key in that.om.objects){
-                        log.debug("Unmuting " + key);
-                        $("#"+key).removeClass("irt_object_disabled")
-                        that.om.objects[key].setStatus(true);
+                    for (var obj in that.om.objects){
+                        console.debug("Unmuting " + obj);
+                        $("#"+obj).removeClass("irt_object_disabled");
+                        that.om.objects[obj].setStatus(true);
                     }
                     that._soloed = false;
                 }
@@ -211,7 +255,7 @@ UIManager.prototype = {
     },
 
     _addObjects: function(){
-        for (key in this.om.objects){
+        for (var key in this.om.objects){
             $(this.bg).append("<div class='irt_object' id='" + key + "'></div>");
             $("#"+key).append("<p class='irt_object_title'>" + key + "</p>");
 
@@ -224,9 +268,9 @@ UIManager.prototype = {
                         var topleft = [ui.position.top, ui.position.left];
                         var xy = that._topleft2xy(topleft);
                         that.om.objects[event.target.id].setPosition([xy[0], 0, -1 * xy[1]]);
-                        log.debug("Drag event position: " + topleft);
-                    }
-                , 50)    
+                        console.debug("Drag event position: " + topleft);
+                    },
+                50)
             });
             if (!this.om.objects[key].getStatus()){
                 this._displayObject(key, false);
@@ -235,7 +279,7 @@ UIManager.prototype = {
     },
 
     _removeObjects: function(){
-        for (key in this.om.objects){
+        for (var key in this.om.objects){
             $("#"+key).remove();
         }
     },
@@ -248,7 +292,7 @@ UIManager.prototype = {
     _setListenerPosition: function(xy) {
         var topleft = this._xy2topleft(xy);
         $(this.listener).css({"top": topleft[0], "left": topleft[1]});
-        log.info("New listener position: " + topleft);
+        console.info("New listener position: " + topleft);
         var that = this;
         $(this.listener).draggable({
             drag: function(event, ui){
@@ -268,14 +312,14 @@ UIManager.prototype = {
         var y = 0;  // as we don't have a lattitude here y is always 0 :)
         var z = -10 * Math.cos(angle * (Math.PI / 180));
 
-        log.info("Set angle " + angle + " to new listener orientation " + x + " " + y + " " + z);
+        console.info("Set angle " + angle + " to new listener orientation " + x + " " + y + " " + z);
         this.om.setListenerOrientation(x, y, z);
     },
 
     _changeUIObjectPosition: function(id, xy) {
         var topleft = this._xy2topleft(xy);
         $("#"+id).css({"top": topleft[0], "left": topleft[1]});
-        log.debug("New position of " + id + " is: " + topleft + "(xy: " + xy + ")");
+        console.debug("New position of " + id + " is: " + topleft + "(xy: " + xy + ")");
     },
 
     _setObjPos: function(id, topleft){
@@ -291,7 +335,7 @@ UIManager.prototype = {
     },
 
     _topleft2xy: function(topleft){
-        var xy = [-(this.roomsize[1] / 2 - topleft[1]) / this._resizeFactor, 
+        var xy = [-(this.roomsize[1] / 2 - topleft[1]) / this._resizeFactor,
                   (this.roomsize[0] / 2 - topleft[0]) / this._resizeFactor];
         return xy;
     },
@@ -309,6 +353,6 @@ UIManager.prototype = {
         var angle = Math.atan2(xyz[0], -xyz[2]) / Math.PI * 180;
         return angle;
     }
-}
+};
 
 module.exports = UIManager;

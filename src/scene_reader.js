@@ -11,8 +11,6 @@
  * @callback loaded_callback
  */
 
-window.$ = require('jquery');
-var log = require('loglevel');
 
 /**
  * Represents SceneReader class. Will load and parse scene data from URL for the
@@ -20,9 +18,9 @@ var log = require('loglevel');
  *
  * @constructor
  * @abstract
- * 
- * @param {loaded_callback} [loaded_callback=undefined] - Callback that will be executed 
- * if scene data is loaded and parsed. 
+ *
+ * @param {loaded_callback} [loaded_callback=undefined] - Callback that will be executed
+ * if scene data is loaded and parsed.
  * @fires module:bogJS~SceneReader#scene_loaded
  *
  */
@@ -32,7 +30,7 @@ var SceneReader = function(loaded_callback){
 }
 
 SceneReader.prototype = {
-    
+
     /**
      * Executes XHR to load and parse the scene data from the passed URL
      *
@@ -40,7 +38,7 @@ SceneReader.prototype = {
      * @fires module:bogJS~SceneReader#scene_loaded
      */
     load: function(url){
-        // we need to do this as within the anonymous success function of the ajax call, 
+        // we need to do this as within the anonymous success function of the ajax call,
         // 'this' will refer to the window object and NOT to the SceneReader instance!
         var that = this;
         $.ajax({
@@ -65,48 +63,52 @@ SceneReader.prototype = {
         var groupObjects = data[3];
         var audiobeds = data[4];
         var extraObjects = data[5];
+        var interactiveInfo = data[6];
         var singleObjects = {};
         for (var kf in extraObjects){
             for (var group in groupObjects[kf]){
                 for (var el in groupObjects[kf][group]){
                     var obj = groupObjects[kf][group][el];
                     var idx = extraObjects[kf].indexOf(obj);
-                    log.debug('Checking for double entry for object ' + obj);
+                    console.debug('Checking for double entry for object ' + obj);
                     if (idx > -1) {
                         extraObjects[kf].splice(idx, 1);
-                        log.debug('Found group object ' + obj + ' also as single objects entry. Removing if from the list.');
+                        console.debug('Found group object ' + obj + ' also as single objects entry. Removing if from the list.');
                     }
                 }
             }
         }
         singleObjects = extraObjects;
-        
-        /** 
+
+        /**
          * Will be fired if scene data is loaded and parsed
          * @event module:bogJS~SceneReader#scene_loaded
-         * @abstract 
+         * @abstract
          *
-         * @property {module:bogJS~keyframes} keyframes - 'Dictionary' with keyframes 
-         * (Array with commands per detected keyframe in scene) 
-         * 
+         * @property {module:bogJS~keyframes} keyframes - 'Dictionary' with keyframes
+         * (Array with commands per detected keyframe in scene)
+         *
          * @property {module:bogJS~audioURLs} audioURLs - 'Dictionary' with audioURLs
          * per Object in Scene (to be used for mapping of objects to
          * audio signals)
-         * 
+         *
          * @property {module:bogJS~sceneInfo} sceneInfo - 'Dictionary' with additional sceneInfo
          * (Can contain 'name', 'object_count', 'listener_orientation',
          * 'listener_position' and / or 'room_dimensions')
-         * 
+         *
          * @property {module:bogJS~groupObjects} groupObjects - 'Dictionary'
-         * containing info to identify grouped objects 
-         * 
+         * containing info to identify grouped objects
+         *
          * @property {module:bogJS~singleObjects} singleObjects - 'Dictionary'
          * containing info to identify single objects
          *
          * @property {module:bogJS~audiobeds} audiobeds - 'Dictionary'
          * containing objects and their "track mapping" info
+         *
+         * @property {module:bogJS~interactiveInfo} interactiveInfo - 'Dictionary'
+         * containing info for interactive objects and groups
          */
-        $(this).triggerHandler('scene_loaded', [keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds])
+        $(this).triggerHandler('scene_loaded', [keyframes, audioURLs, sceneInfo, groupObjects, singleObjects, audiobeds, interactiveInfo])
     },
 
     _tokenize: function(d){
@@ -132,6 +134,9 @@ SceneReader.prototype = {
         var keyframes = {};
         var audioURLs = {};
         var sceneInfo = {};
+        var interactiveInfo = {};
+        interactiveInfo.switchGroups = {};
+        interactiveInfo.gain = {};
         var groups = {};
         var extraObjects = {};
         var audiobeds = {};
@@ -139,26 +144,48 @@ SceneReader.prototype = {
         for (var i = 0; i < m.length; i++) {
             if (m[i].cmd[0] === "spatdif"){  // darauf verzichten um die lesbarkeit des codes zu verbesern?
                 if (m[i].cmd[1] === "meta"){
-                    var meta = m[i]
+                    var meta = m[i];
                     if (meta.cmd[3] === "name") {
-                        sceneInfo['name'] = meta.params;
+                        sceneInfo.name = meta.params;
                     } else if (meta.cmd[2] === "objects") {
-                        sceneInfo['object_count'] = meta.params; 
+                        sceneInfo.object_count = meta.params;
                     } else if ((meta.cmd[2] === "reference") && (meta.cmd[3] === "orientation")){
-                        sceneInfo['listener_orientation'] = this._parseFloatArray(meta.params);
+                        sceneInfo.listener_orientation = this._parseFloatArray(meta.params);
                     } else if ((meta.cmd[2] === "room") && (meta.cmd[3] === "origin")){
-                        sceneInfo['listener_position'] = this._parseFloatArray(meta.params);
+                        sceneInfo.listener_position = this._parseFloatArray(meta.params);
                     } else if ((meta.cmd[2] === "room") && (meta.cmd[3] === "dimension")){
-                        sceneInfo['room_dimensions'] = this._parseFloatArray(meta.params);
+                        sceneInfo.room_dimensions = this._parseFloatArray(meta.params);
                     } else if ((meta.cmd[2] === "audiobed") && (meta.cmd[3] === "url")) {
-                        sceneInfo['audiobed_url'] = meta.params;
+                        sceneInfo.audiobed_url = meta.params;
                     } else if ((meta.cmd[2] === "audiobed") && (meta.cmd[3] === "tracks")) {
-                        sceneInfo['audiobed_tracks'] = meta.params;
+                        sceneInfo.audiobed_tracks = meta.params;
+                    } else if (meta.cmd[2] === "interactive") {
+                        if (meta.cmd[3] === "switchGroup") {
+                            if (meta.cmd[4] === "label") {
+                                var label = meta.params[0];
+                                interactiveInfo.switchGroups[label] = {};
+                                interactiveInfo.switchGroups[label].default = meta.params[1];
+                                interactiveInfo.switchGroups[label].items = {};
+                            } else {
+                                var item_label = meta.params[0];
+                                interactiveInfo.switchGroups[label].items[item_label] = meta.params[1];
+                            }
+                        } else if (meta.cmd[3] === "gain"){
+                            if (meta.cmd[4] === "label") {
+                                var label = meta.params[0];
+                                interactiveInfo.gain[label] = {};
+                                interactiveInfo.gain[label].range = [meta.params[1], meta.params[2]];
+                                interactiveInfo.gain[label].objects = [];
+                            } else {
+                                interactiveInfo.gain[label].objects.push(meta.params);
+                            }
+                        }
                     }
+
                 } else if (m[i].cmd[1] === "time") {
                     keyframe = m[i].params;
                     keyframes[keyframe] = [];
-                } else if ((m[i].cmd[1] === "source") && (keyframe !== null)) { 
+                } else if ((m[i].cmd[1] === "source") && (keyframe !== null)) {
                     // ignore the commands until the first keyframe appears
                     var obj = m[i].cmd[2];
                     var cmd = m[i].cmd[3];
@@ -167,7 +194,7 @@ SceneReader.prototype = {
                     if (cmd === "track_mapping"){
                         if ((params.startsWith("bed_")) && (obj in audiobeds ===  false)){
                             audiobeds[obj] = params;
-                        } else if ((params.startsWith("bed_") === false) && (obj in audioURLs === false)) { 
+                        } else if ((params.startsWith("bed_") === false) && (obj in audioURLs === false)) {
                             audioURLs[obj] = params;
                             if (keyframe in extraObjects ===  false){
                                 extraObjects[keyframe] = [];
@@ -185,7 +212,7 @@ SceneReader.prototype = {
                         }
                         if (groups[keyframe][params].indexOf(obj) === -1){
                             groups[keyframe][params].push(obj)  // == groups.keyframe.params.push(obj)
-                            log.debug("Adding " + obj + " to group " + params + " at keyframe " + keyframe);
+                            console.debug("Adding " + obj + " to group " + params + " at keyframe " + keyframe);
                         }
                     }
                     var triplet = {};
@@ -196,10 +223,10 @@ SceneReader.prototype = {
                     triplet.cmd = cmd;
                     triplet.params = m[i].params;
                     keyframes[keyframe].push(triplet);
-                } 
+                }
             }
         }
-        return [keyframes, audioURLs, sceneInfo, groups, audiobeds, extraObjects];
+        return [keyframes, audioURLs, sceneInfo, groups, audiobeds, extraObjects, interactiveInfo];
     },
 
     _parseFloatArray: function(array){
