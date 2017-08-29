@@ -32,10 +32,10 @@ var ObjectController = function(ctx, sourceNode, targetNode=ctx.destination) {
     this.panner = ctx.createPanner();
 
     // Experimental highpass to avoid sizzling noinse while chaning view / angle
-    this.highpass = ctx.createBiquadFilter();
-    this.highpass.type = "highpass";
-    this.setHighpassFreq(80);
-    this.highpass.connect(this.panner);
+    //this.highpass = ctx.createBiquadFilter();
+    //this.highpass.type = "highpass";
+    //this.setHighpassFreq(80);
+    //this.highpass.connect(this.panner);
 
     /**
      * Has the current panning mode of the object
