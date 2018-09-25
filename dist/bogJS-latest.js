@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "93c49d3 v0.3.1";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Aug 29 2017 11:52:03 GMT+0200 (CEST)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "2275673 v0.4.0";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Sep 25 2018 14:42:29 GMT+0200 (Mitteleuropäische Sommerzeit)";
 
 // making the objects globally available
 window.ChannelOrderTest = require('./src/channelorder_test');
@@ -2055,12 +2055,15 @@ var ChannelOrderTest = function ChannelOrderTest(container, tracks, ctx) {
     this._tracks = parseInt(tracks);
     this._splitter = this.ctx.createChannelSplitter(this._tracks);
     this.analysers = [];
+    this.gainNode = this.ctx.createGain();
+    this.gainNode.gain.value = 0;
+    this.gainNode.connect(this.ctx.destination);
 
     for (var i = 0; i < this._tracks; i++) {
         this.analysers[i] = this.ctx.createAnalyser();
         this.analysers[i].fftSize = 2048; // "hard-coded" due to Safari -> analyser chrashes if fftSize value is greater than 2048
         this._splitter.connect(this.analysers[i], i);
-        //this.analysers[i].connect(this.ctx.destination);
+        this.analysers[i].connect(this.gainNode);
     }
     //var root = root || "http://lab.irt.de/demos/order/";
     if (container === "webm") {
@@ -2087,40 +2090,61 @@ ChannelOrderTest.prototype = {
         this.mediaElement.connect(this._splitter);
         this.audio.play();
         var last_unique = [];
-        this._counter = 0;
 
-        // onplaying will be fired every time the audio begins
-        this.audio.onplaying = function () {
-            var order = this.testChs();
-            var unique = _.unique(order);
+        this.audio.onended = function () {
+            console.debug("ChannelOrderTest Playback ended");
+        };
 
-            // the returned order should be identical for two consecutive calls
-            // to make sure we have a reliable result
-            if (unique.length === this._tracks && _.isEqual(last_unique, unique)) {
-                console.info('Channel order detected: ' + order);
+        // onplay will be fired once the audio playback started
+        $(this.audio).on("play", function () {
+            var _this = this;
 
-                /**
-                 * If channel order was detected and ensured, the event is
-                 * fired with channel order as array.
-                 * @event module:bogJS~ChannelOrderTest#order_ready
-                 * @property {Number[]} order - Array containing the detected
-                 * order
-                 */
-                $(this).triggerHandler('order_ready', [order]);
-                this.audio.pause();
-            } else if (unique.length === this._tracks) {
-                last_unique = unique;
+            console.debug("Channel order testfile started...");
+            // this is a fix to make the channel order test working on Firefox
+            // the initial attempt (listen on "playing") did no more in FF after
+            // an update.
+
+            var _loop = function _loop(i, _p) {
+                _p = _p.then(function () {
+                    return new Promise(function (resolve) {
+                        return setTimeout(function () {
+                            var order = this.testChs();
+                            var unique = _.unique(order);
+                            // the returned order should be identical for two consecutive calls
+                            // to make sure we have a reliable result
+                            if (unique.length === this._tracks && _.isEqual(last_unique, unique)) {
+                                console.info('Channel order detected: ' + order);
+                                /**
+                                 * If channel order was detected and ensured, the event is
+                                 * fired with channel order as array.
+                                 * @event module:bogJS~ChannelOrderTest#order_ready
+                                 * @property {Number[]} order - Array containing the detected
+                                 * order
+                                 */
+                                $(document).triggerHandler('order_ready', [order]);
+                                this.audio.pause();
+                                return;
+                            } else if (unique.length === this._tracks) {
+                                last_unique = unique;
+                            }
+                            console.debug("Channel order not yet detected. Iteration:  " + i);
+                            if (i >= 9) {
+                                console.warn("Channel order not detectable. Stopping indentfication and trigger default values.");
+                                order = _.range(this._tracks);
+                                $(this).triggerHandler('order_ready', [order]);
+                                this.audio.pause();
+                            }
+                            resolve();
+                        }.bind(_this), 500);
+                    });
+                });
+                p = _p;
+            };
+
+            for (var i = 0, p = Promise.resolve(); i < 10; i++) {
+                _loop(i, p);
             }
-
-            console.debug("Channel order not yet detected. Iteration:  " + this._counter);
-            if (this._counter >= 5) {
-                console.warn("Channel order not detectable. Stop trying and trigger default values.");
-                order = _.range(this._tracks);
-                $(this).triggerHandler('order_ready', [order]);
-                this.audio.pause();
-            }
-            this._counter += 1;
-        }.bind(this, last_unique);
+        }.bind(this, last_unique));
     },
 
     /**
@@ -2601,6 +2625,13 @@ AudioData.prototype = {
         }
     },
 
+    resetRange: function resetRange() {
+        this.audio.loopStart = 0;
+        this._rangeStart = 0;
+        this.audio.loopEnd = 0;
+        this._rangeEnd = 0;
+    },
+
     /**
      * Mutes {@link AudioData} instance
      */
@@ -2639,6 +2670,10 @@ AudioData.prototype = {
         } else {
             return this._startOffset;
         }
+    },
+
+    getDuration: function getDuration() {
+        return this.duration;
     },
 
     /**
@@ -2821,6 +2856,7 @@ AudioData.prototype = {
     /** @var {boolean} */
     this.playing = false;
     this.canplay = false;
+    this._muted = false;
     this.init(sounds);
 
     /**
@@ -2964,6 +3000,14 @@ IRTPlayer.prototype = {
         this.playing = false;
     },
 
+    isPaused: function isPaused() {
+        if (this.playing) {
+            return false;
+        } else {
+            return true;
+        }
+    },
+
     /**
      * Stops playback of all audio sources in {@link IRTPlayer#signals}
      */
@@ -2990,12 +3034,39 @@ IRTPlayer.prototype = {
         }
     },
 
+    mute: function mute() {
+        this._do('mute');
+        this._muted = true;
+        this.activeSignal = null;
+    },
+
     /**
      * Will unmute all audio sources in {@link IRTPlayer#signals}
      */
     unmuteAll: function unmuteAll() {
         this._do('unmute');
+        this._muted = false;
         this.activeSignal = null;
+    },
+
+    unmute: function unmute() {
+        this.unmuteAll();
+    },
+
+    toggleMute: function toggleMute() {
+        if (this._muted) {
+            this.unmute();
+        } else {
+            this.mute();
+        }
+    },
+
+    isMuted: function isMuted() {
+        if (this._muted) {
+            return true;
+        } else {
+            return false;
+        }
     },
 
     /**
@@ -3023,11 +3094,20 @@ IRTPlayer.prototype = {
      */
     toggleLoop: function toggleLoop() {
         if (this.loopingState == false) {
-            this.loopingState = true;
+            this.loop();
         } else {
-            this.loopingState = false;
+            this.unloop();
         }
-        this._do('toggleLoop');
+    },
+
+    loop: function loop() {
+        this.loopingState = true;
+        this._do('setLoopState', true);
+    },
+
+    unloop: function unloop() {
+        this.loopingState = false;
+        this._do('setLoopState', false);
     },
 
     /**
@@ -3052,6 +3132,10 @@ IRTPlayer.prototype = {
         this._do('setRangeEnd', pos);
     },
 
+    resetRange: function resetRange() {
+        this._do('resetRange');
+    },
+
     /**
      * Jump to passed position during playback
      *
@@ -3068,6 +3152,15 @@ IRTPlayer.prototype = {
      */
     getTime: function getTime() {
         return this.signals[0].getTime();
+    },
+
+    getDuration: function getDuration() {
+        return this.signals[0].getDuration();
+    },
+
+    setVolume: function setVolume(vol) {
+        this._do('setGain', vol);
+        this.vol = vol;
     },
 
     /**
@@ -3849,24 +3942,29 @@ ObjectManager.prototype = {
             // should work. In the worst case, the playback will pause again if
             // the assets are not yet loaded and decoded.
             $(this._audiobed).on('audio_loaded', function () {
+                var url = "";
+                if (this._audiobed._mediaElement.src !== "") {
+                    url = this._audiobed._mediaElement.src;
+                } else if (this._audiobed._mediaElement.currentSrc !== "") {
+                    url = this._audiobed._mediaElement.currentSrc;
+                } else {
+                    console.error("The src of the audiobed couldn't be detected!");
+                }
+                var re = /\.[0-9a-z]{3,4}$/i; // strips the file extension (must be 3 or 4 characters)
+                var container = re.exec(url)[0];
+                container = container.split('.').join(""); // removes dot from the string
+                this._chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
                 $(document).triggerHandler('om_ready');
                 console.debug('Audiobed ready for playback');
+                //var chOrder = this._chOrderTest.testChs();
             }.bind(this));
+
             $(this._audiobed).on('audio_ended', function () {
                 $(document).triggerHandler('om_ended');
                 om.stop();
             }.bind(this));
-            var url = "";
-            if (this._audiobed._mediaElement.src !== "") {
-                url = this._audiobed._mediaElement.src;
-            } else {
-                url = this._audiobed._mediaElement.currentSrc;
-            }
-            var re = /\.[0-9a-z]{3,4}$/i; // strips the file extension (must be 3 or 4 characters)
-            var container = re.exec(url)[0];
-            container = container.split('.').join(""); // removes dot from the string
-            this._chOrderTest = new ChannelOrderTest(container, this._mediaElementTracks, this.ctx, this._channorder_root);
-            $(this._chOrderTest).on('order_ready', function (e, order) {
+
+            $(document).on('order_ready', function (e, order) {
                 console.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
@@ -3881,7 +3979,6 @@ ObjectManager.prototype = {
                     this.objects["Bed" + order[i]].setAudio(this._audiobed.gainController[i]);
                 }
             }.bind(this));
-            var chOrder = this._chOrderTest.testChs();
         }
 
         for (var obj in this._audiobedTracks) {
