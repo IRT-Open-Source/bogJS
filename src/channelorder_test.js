@@ -52,12 +52,15 @@ var ChannelOrderTest = function(container, tracks, ctx, root="signals/order/"){
     this._tracks = parseInt(tracks);
     this._splitter = this.ctx.createChannelSplitter(this._tracks);
     this.analysers = [];
+    this.gainNode = this.ctx.createGain();
+    this.gainNode.gain.value = 0;
+    this.gainNode.connect(this.ctx.destination);
 
     for (var i = 0; i < this._tracks; i++){
         this.analysers[i] = this.ctx.createAnalyser();
         this.analysers[i].fftSize = 2048;  // "hard-coded" due to Safari -> analyser chrashes if fftSize value is greater than 2048
         this._splitter.connect(this.analysers[i], i);
-        //this.analysers[i].connect(this.ctx.destination);
+        this.analysers[i].connect(this.gainNode);
     }
     //var root = root || "http://lab.irt.de/demos/order/";
     if (container === "webm"){   // we assume opus if webm is used
@@ -84,40 +87,51 @@ ChannelOrderTest.prototype = {
         this.mediaElement.connect(this._splitter);
         this.audio.play();
         var last_unique = [];
-        this._counter = 0;
 
-        // onplaying will be fired every time the audio begins
-        this.audio.onplaying = function(){
-            var order = this.testChs();
-            var unique = _.unique(order);
+        this.audio.onended = function(){
+          console.debug("ChannelOrderTest Playback ended");
+        }
 
-            // the returned order should be identical for two consecutive calls
-            // to make sure we have a reliable result
-            if ((unique.length === this._tracks) && (_.isEqual(last_unique, unique))) {
-                console.info('Channel order detected: ' + order);
-
-                /**
-                 * If channel order was detected and ensured, the event is
-                 * fired with channel order as array.
-                 * @event module:bogJS~ChannelOrderTest#order_ready
-                 * @property {Number[]} order - Array containing the detected
-                 * order
-                 */
-                $(this).triggerHandler('order_ready', [order]);
-                this.audio.pause();
-            } else if (unique.length === this._tracks){
-                last_unique = unique;
+        // onplay will be fired once the audio playback started
+        $(this.audio).on("play", function(){
+            console.debug("Channel order testfile started...");
+            // this is a fix to make the channel order test working on Firefox
+            // the initial attempt (listen on "playing") did no more in FF after
+            // an update.
+            for (let i = 0, p = Promise.resolve(); i < 10; i++) {
+                p = p.then(() => new Promise(resolve =>
+                    setTimeout(function () {
+                        var order = this.testChs();
+                        var unique = _.unique(order);
+                        // the returned order should be identical for two consecutive calls
+                        // to make sure we have a reliable result
+                        if ((unique.length === this._tracks) && (_.isEqual(last_unique, unique))) {
+                            console.info('Channel order detected: ' + order);
+                            /**
+                             * If channel order was detected and ensured, the event is
+                             * fired with channel order as array.
+                             * @event module:bogJS~ChannelOrderTest#order_ready
+                             * @property {Number[]} order - Array containing the detected
+                             * order
+                             */
+                            $(document).triggerHandler('order_ready', [order]);
+                            this.audio.pause();
+                            return;
+                        } else if (unique.length === this._tracks){
+                            last_unique = unique;
+                        }
+                        console.debug("Channel order not yet detected. Iteration:  " + i);
+                        if (i >= 9){
+                            console.warn("Channel order not detectable. Stopping indentfication and trigger default values.");
+                            order = _.range(this._tracks);
+                            $(this).triggerHandler('order_ready', [order]);
+                            this.audio.pause();
+                        }
+                        resolve();
+                    }.bind(this), 500)
+                ));
             }
-
-            console.debug("Channel order not yet detected. Iteration:  " + this._counter);
-            if (this._counter >= 5){
-                console.warn("Channel order not detectable. Stop trying and trigger default values.");
-                order = _.range(this._tracks);
-                $(this).triggerHandler('order_ready', [order]);
-                this.audio.pause();
-            }
-            this._counter += 1;
-        }.bind(this, last_unique);
+        }.bind(this, last_unique));
     },
 
     /**
