@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "2275673 v0.4.0";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Sep 25 2018 14:42:29 GMT+0200 (Mitteleuropäische Sommerzeit)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "76345f1 v0.4.1";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Sep 25 2018 14:46:59 GMT+0200 (Mitteleuropäische Sommerzeit)";
 
 // making the objects globally available
 window.ChannelOrderTest = require('./src/channelorder_test');
@@ -2625,13 +2625,6 @@ AudioData.prototype = {
         }
     },
 
-    resetRange: function resetRange() {
-        this.audio.loopStart = 0;
-        this._rangeStart = 0;
-        this.audio.loopEnd = 0;
-        this._rangeEnd = 0;
-    },
-
     /**
      * Mutes {@link AudioData} instance
      */
@@ -2670,10 +2663,6 @@ AudioData.prototype = {
         } else {
             return this._startOffset;
         }
-    },
-
-    getDuration: function getDuration() {
-        return this.duration;
     },
 
     /**
@@ -2856,7 +2845,6 @@ AudioData.prototype = {
     /** @var {boolean} */
     this.playing = false;
     this.canplay = false;
-    this._muted = false;
     this.init(sounds);
 
     /**
@@ -3000,14 +2988,6 @@ IRTPlayer.prototype = {
         this.playing = false;
     },
 
-    isPaused: function isPaused() {
-        if (this.playing) {
-            return false;
-        } else {
-            return true;
-        }
-    },
-
     /**
      * Stops playback of all audio sources in {@link IRTPlayer#signals}
      */
@@ -3034,39 +3014,12 @@ IRTPlayer.prototype = {
         }
     },
 
-    mute: function mute() {
-        this._do('mute');
-        this._muted = true;
-        this.activeSignal = null;
-    },
-
     /**
      * Will unmute all audio sources in {@link IRTPlayer#signals}
      */
     unmuteAll: function unmuteAll() {
         this._do('unmute');
-        this._muted = false;
         this.activeSignal = null;
-    },
-
-    unmute: function unmute() {
-        this.unmuteAll();
-    },
-
-    toggleMute: function toggleMute() {
-        if (this._muted) {
-            this.unmute();
-        } else {
-            this.mute();
-        }
-    },
-
-    isMuted: function isMuted() {
-        if (this._muted) {
-            return true;
-        } else {
-            return false;
-        }
     },
 
     /**
@@ -3094,20 +3047,11 @@ IRTPlayer.prototype = {
      */
     toggleLoop: function toggleLoop() {
         if (this.loopingState == false) {
-            this.loop();
+            this.loopingState = true;
         } else {
-            this.unloop();
+            this.loopingState = false;
         }
-    },
-
-    loop: function loop() {
-        this.loopingState = true;
-        this._do('setLoopState', true);
-    },
-
-    unloop: function unloop() {
-        this.loopingState = false;
-        this._do('setLoopState', false);
+        this._do('toggleLoop');
     },
 
     /**
@@ -3132,10 +3076,6 @@ IRTPlayer.prototype = {
         this._do('setRangeEnd', pos);
     },
 
-    resetRange: function resetRange() {
-        this._do('resetRange');
-    },
-
     /**
      * Jump to passed position during playback
      *
@@ -3152,15 +3092,6 @@ IRTPlayer.prototype = {
      */
     getTime: function getTime() {
         return this.signals[0].getTime();
-    },
-
-    getDuration: function getDuration() {
-        return this.signals[0].getDuration();
-    },
-
-    setVolume: function setVolume(vol) {
-        this._do('setGain', vol);
-        this.vol = vol;
     },
 
     /**
