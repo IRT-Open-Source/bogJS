@@ -264,25 +264,32 @@ ObjectManager.prototype = {
             // should work. In the worst case, the playback will pause again if
             // the assets are not yet loaded and decoded.
             $(this._audiobed).on('audio_loaded', function(){
+                var url = "";
+                if (this._audiobed._mediaElement.src !== ""){
+                    url = this._audiobed._mediaElement.src;
+                } else if (this._audiobed._mediaElement.currentSrc !== "") {
+                    url = this._audiobed._mediaElement.currentSrc;
+                } else {
+                    console.error("The src of the audiobed couldn't be detected!");
+                }
+                var re = /\.[0-9a-z]{3,4}$/i;  // strips the file extension (must be 3 or 4 characters)
+                var container = re.exec(url)[0];
+                container = container.split('.').join(""); // removes dot from the string
+                this._chOrderTest = new ChannelOrderTest(container,
+                                                     this._mediaElementTracks,
+                                                     this.ctx,
+                                                     this._channorder_root);
                 $(document).triggerHandler('om_ready');
                 console.debug('Audiobed ready for playback');
+                //var chOrder = this._chOrderTest.testChs();
             }.bind(this));
+
             $(this._audiobed).on('audio_ended', function(){
                 $(document).triggerHandler('om_ended');
                 om.stop();
             }.bind(this));
-            var url = "";
-            if (this._audiobed._mediaElement.src !== ""){
-                url = this._audiobed._mediaElement.src;
-            } else {
-                url = this._audiobed._mediaElement.currentSrc;
-            }
-            var re = /\.[0-9a-z]{3,4}$/i;  // strips the file extension (must be 3 or 4 characters)
-            var container = re.exec(url)[0];
-            container = container.split('.').join(""); // removes dot from the string
-            this._chOrderTest = new ChannelOrderTest(container,
-                                                   this._mediaElementTracks, this.ctx, this._channorder_root);
-            $(this._chOrderTest).on('order_ready', function(e, order){
+
+            $(document).on('order_ready', function(e, order){
                 console.debug('Got channel order: ' + order);
                 this._chOrder = order;
                 // firstly, disconnect any connections to other nodes to avoid
@@ -297,7 +304,7 @@ ObjectManager.prototype = {
                     this.objects["Bed"+order[i]].setAudio(this._audiobed.gainController[i]);
                 }
             }.bind(this));
-            var chOrder = this._chOrderTest.testChs();
+
         }
 
         for (var obj in this._audiobedTracks){
