@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "76345f1 v0.4.1";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Sep 25 2018 14:46:59 GMT+0200 (Mitteleuropäische Sommerzeit)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "b251f86 v0.4.2";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Wed Sep 26 2018 15:01:39 GMT+0200 (Mitteleuropäische Sommerzeit)";
 
 // making the objects globally available
 window.ChannelOrderTest = require('./src/channelorder_test');
@@ -2131,7 +2131,7 @@ ChannelOrderTest.prototype = {
                             if (i >= 9) {
                                 console.warn("Channel order not detectable. Stopping indentfication and trigger default values.");
                                 order = _.range(this._tracks);
-                                $(this).triggerHandler('order_ready', [order]);
+                                $(document).triggerHandler('order_ready', [order]);
                                 this.audio.pause();
                             }
                             resolve();
@@ -2150,16 +2150,19 @@ ChannelOrderTest.prototype = {
     /**
      * Save frequency bins to arrays for later analysis
      * @protected
+     * @returns {Number[]}  Nested array (Float32Array) containing the frequency
+     * bins for each channel
      */
     _getFreqData: function _getFreqData() {
         var freqBins = [];
+        var freqBinaryBins = [];
         for (var i = 0; i < this._tracks; i++) {
             // Float32Array should be the same length as the frequencyBinCount
             freqBins[i] = new Float32Array(this.analysers[i].frequencyBinCount);
             // fill the Float32Array with data returned from getFloatFrequencyData()
             this.analysers[i].getFloatFrequencyData(freqBins[i]);
         }
-        this.freqBins = freqBins;
+        return freqBins;
     },
 
     /**
@@ -2168,10 +2171,10 @@ ChannelOrderTest.prototype = {
      * channel order
      */
     testChs: function testChs() {
-        this._getFreqData();
+        var freqBins = this._getFreqData();
         var indices = [];
-        for (var i = 0; i < this.freqBins.length; i++) {
-            var idx = _.indexOf(this.freqBins[i], _.max(this.freqBins[i]));
+        for (var i = 0; i < freqBins.length; i++) {
+            var idx = _.indexOf(freqBins[i], _.max(freqBins[i]));
             indices[i] = idx;
         }
         console.debug("Decoded indices: " + indices);
@@ -3873,6 +3876,7 @@ ObjectManager.prototype = {
             // should work. In the worst case, the playback will pause again if
             // the assets are not yet loaded and decoded.
             $(this._audiobed).on('audio_loaded', function () {
+                console.debug("Audiobed loaded, detect channel order..");
                 var url = "";
                 if (this._audiobed._mediaElement.src !== "") {
                     url = this._audiobed._mediaElement.src;
