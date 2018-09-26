@@ -264,6 +264,7 @@ ObjectManager.prototype = {
             // should work. In the worst case, the playback will pause again if
             // the assets are not yet loaded and decoded.
             $(this._audiobed).on('audio_loaded', function(){
+                console.debug("Audiobed loaded, detect channel order..");
                 var url = "";
                 if (this._audiobed._mediaElement.src !== ""){
                     url = this._audiobed._mediaElement.src;
