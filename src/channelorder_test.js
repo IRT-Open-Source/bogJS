@@ -137,16 +137,19 @@ ChannelOrderTest.prototype = {
     /**
      * Save frequency bins to arrays for later analysis
      * @protected
+     * @returns {Number[]}  Nested array (Float32Array) containing the frequency
+     * bins for each channel
      */
     _getFreqData: function(){
         var freqBins = [];
+        var freqBinaryBins = [];
         for (var i = 0; i < this._tracks; i++){
             // Float32Array should be the same length as the frequencyBinCount
             freqBins[i] = new Float32Array(this.analysers[i].frequencyBinCount);
             // fill the Float32Array with data returned from getFloatFrequencyData()
             this.analysers[i].getFloatFrequencyData(freqBins[i]);
         }
-        this.freqBins = freqBins;
+        return freqBins;
     },
 
     /**
@@ -155,10 +158,10 @@ ChannelOrderTest.prototype = {
      * channel order
      */
     testChs: function(){
-        this._getFreqData();
+        var freqBins = this._getFreqData();
         var indices = [];
-        for (var i = 0; i < this.freqBins.length; i++){
-            var idx = _.indexOf(this.freqBins[i], _.max(this.freqBins[i]));
+        for (var i = 0; i < freqBins.length; i++){
+            var idx = _.indexOf(freqBins[i], _.max(freqBins[i]));
             indices[i] = idx;
         }
         console.debug("Decoded indices: " + indices);
