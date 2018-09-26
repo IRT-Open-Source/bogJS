@@ -124,7 +124,7 @@ ChannelOrderTest.prototype = {
                         if (i >= 9){
                             console.warn("Channel order not detectable. Stopping indentfication and trigger default values.");
                             order = _.range(this._tracks);
-                            $(this).triggerHandler('order_ready', [order]);
+                            $(document).triggerHandler('order_ready', [order]);
                             this.audio.pause();
                         }
                         resolve();
