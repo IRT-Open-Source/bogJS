@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "5752981 v0.4.2";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Mar 26 2019 09:49:27 GMT+0100 (Mitteleuropäische Normalzeit)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "264b307 v0.4.3";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Mar 26 2019 09:59:54 GMT+0100 (Mitteleuropäische Normalzeit)";
 
 // making the objects globally available
 window.ChannelOrderTest = require('./src/channelorder_test');
