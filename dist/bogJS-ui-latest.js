@@ -2,8 +2,8 @@
 (function (global){
 "use strict";
 
-global.__BROWSERIFY_META_DATA__GIT_VERSION = "b251f86 v0.4.2";
-global.__BROWSERIFY_META_DATA__CREATED_AT = "Wed Sep 26 2018 15:01:45 GMT+0200 (Mitteleuropäische Sommerzeit)";
+global.__BROWSERIFY_META_DATA__GIT_VERSION = "5752981 v0.4.2";
+global.__BROWSERIFY_META_DATA__CREATED_AT = "Tue Mar 26 2019 09:49:33 GMT+0100 (Mitteleuropäische Normalzeit)";
 
 // making the objects globally available
 window.UIManager = require('./src/ui');
