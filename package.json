@@ -45,7 +45,7 @@
     "browserify": "^14.4.0",
     "commitify": "git://github.com/kickermeister/commitify.git#master",
     "deamdify": "^0.2.0",
-    "jquery": "^3.2.1",
+    "jquery": "^3.4.0",
     "jsdoc": "^3.5.4",
     "simplifyify": "^7.0.1"
   }
