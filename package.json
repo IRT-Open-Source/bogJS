@@ -1,6 +1,6 @@
 {
   "name": "bogJS",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "A JS framework for object-based rendering in browsers",
   "main": "index.js",
   "scripts": {
